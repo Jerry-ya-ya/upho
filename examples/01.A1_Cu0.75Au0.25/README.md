@@ -91,7 +91,14 @@ Here we consider a bit more practical case when Cu<sub>0.75</sub>Au<sub>0.25</su
     - `sf_E2.dat` has the element-resolved spectral functions.
     - `sf_SR.dat` has the spectral functions decomposed by the small representations.
 
-6.  Plot the spectral functions. You can refer to `plot.py` in this directory.
+6.  Plot the spectral functions:
+
+    ```bash
+    upho_plot
+    ```
+
+    This reads `sf_SR.dat` and `band.conf`, then writes `sf.svg`. Run
+    `upho_plot --help` to see options for changing the files, title, or color map.
     Hopefully you get the figure like below:
 
     ![](sf.orig.svg)

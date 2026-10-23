@@ -24,6 +24,7 @@ scripts = [
     'scripts/upho_sf',
     'scripts/upho_qpoints',
     'scripts/upho_fit',
+    'scripts/upho_plot',
 ]
 setup(
     # This is the name of your project. The first time you publish this
@@ -83,6 +84,7 @@ setup(
         'h5py',
         'scipy',
         'spglib',
+        'matplotlib',
         'phonopy==2.14.0',
     ],
 

@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+import argparse
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Plot a phonon spectral function from an sf_*.dat file."
+    )
+    parser.add_argument(
+        "-i",
+        "--input",
+        type=Path,
+        default=Path("sf_SR.dat"),
+        help="Spectral-function data file (default: sf_SR.dat).",
+    )
+    parser.add_argument(
+        "-c",
+        "--band-config",
+        type=Path,
+        default=Path("band.conf"),
+        help="Phonopy band configuration used for X-axis labels (default: band.conf).",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=Path("sf.svg"),
+        help="Output image path (default: sf.svg).",
+    )
+    parser.add_argument(
+        "--title",
+        default="Phonon spectral function",
+        help="Plot title.",
+    )
+    parser.add_argument(
+        "--cmap",
+        default="magma",
+        help="Matplotlib color map (default: magma).",
+    )
+    return parser.parse_args()
+
+
+def read_metadata(filename):
+    """Read the key-value metadata written at the top of an sf_*.dat file."""
+    metadata = {}
+    with filename.open(encoding="utf-8") as stream:
+        for line in stream:
+            if not line.startswith("#"):
+                break
+            key, separator, value = line[1:].partition(":")
+            if separator:
+                metadata[key.strip()] = value.strip()
+    return metadata
+
+
+def read_band_labels(filename):
+    """Return high-symmetry point labels from BAND_LABELS, when available."""
+    if not filename.exists():
+        return []
+
+    with filename.open(encoding="utf-8") as stream:
+        for line in stream:
+            key, separator, value = line.partition("=")
+            if separator and key.strip().upper() == "BAND_LABELS":
+                return [format_band_label(label) for label in value.split()]
+    return []
+
+
+def format_band_label(label):
+    r"""Convert labels such as \Gamma into Matplotlib math text."""
+    if label.startswith("\\"):
+        return "${}$".format(label)
+    return label
+
+
+def add_band_ticks(ax, path_distances, labels):
+    """Add labels and separators at repeated band-segment endpoints."""
+    repeated = np.flatnonzero(np.isclose(np.diff(path_distances), 0.0))
+    tick_positions = [path_distances[0]]
+    tick_positions.extend(path_distances[index] for index in repeated)
+    tick_positions.append(path_distances[-1])
+
+    if len(labels) != len(tick_positions):
+        return
+
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(labels)
+    for position in tick_positions[1:-1]:
+        ax.axvline(position, color="white", linewidth=0.8, alpha=0.65)
+
+
+def plot_spectral_function(data_file, band_config, output_file, title, cmap):
+    distances, frequencies, spectral_functions = np.loadtxt(
+        data_file, usecols=(0, 1, 2), unpack=True
+    )
+    frequency_count = len(np.unique(frequencies))
+    distances = distances.reshape((-1, frequency_count))
+    frequencies = frequencies.reshape((-1, frequency_count))
+    spectral_functions = spectral_functions.reshape((-1, frequency_count))
+
+    metadata = read_metadata(data_file)
+    is_squared = metadata.get("is_squared", "false").lower() == "true"
+    density_unit = r"THz$^{-2}$" if is_squared else r"THz$^{-1}$"
+    sigma_unit = r"THz$^2$" if is_squared else "THz"
+
+    fig, ax = plt.subplots(figsize=(7.2, 5.0), constrained_layout=True)
+    mesh = ax.pcolormesh(
+        distances,
+        frequencies,
+        spectral_functions,
+        cmap=cmap,
+        shading="auto",
+        vmin=0.0,
+        rasterized=True,
+    )
+    colorbar = fig.colorbar(mesh, ax=ax, pad=0.02)
+    colorbar.set_label("Spectral function ({})".format(density_unit))
+
+    ax.set_title(title)
+    ax.set_xlabel(r"Wave-vector path distance ($\mathrm{\AA}^{-1}$)")
+    ax.set_ylabel("Frequency (THz)")
+    ax.set_xlim(float(distances.min()), float(distances.max()))
+    ax.set_ylim(float(frequencies.min()), float(frequencies.max()))
+    ax.axhline(0.0, color="white", linestyle="--", linewidth=0.8, alpha=0.65)
+    add_band_ticks(ax, distances[:, 0], read_band_labels(band_config))
+
+    function = metadata.get("function", "").capitalize()
+    sigma = metadata.get("sigma")
+    if function and sigma:
+        ax.text(
+            0.98,
+            0.97,
+            "{} broadening\n$\\sigma$ = {} {}".format(function, sigma, sigma_unit),
+            transform=ax.transAxes,
+            ha="right",
+            va="top",
+            color="white",
+            fontsize=9,
+            bbox={"facecolor": "black", "edgecolor": "none", "alpha": 0.45},
+        )
+
+    fig.savefig(output_file, dpi=200)
+    plt.close(fig)
+
+
+def main():
+    args = parse_arguments()
+    plot_spectral_function(
+        args.input,
+        args.band_config,
+        args.output,
+        args.title,
+        args.cmap,
+    )
+
+
+if __name__ == "__main__":
+    main()

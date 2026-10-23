@@ -40,8 +40,8 @@ python -m pip install -e .
 
 The editable install reads the dependencies from `setup.py` and installs this project into the active virtual environment.
 
-It also exposes the `upho_weights`, `upho_sf`,
-`upho_qpoints`, and `upho_fit` commands.
+It also exposes the `upho_weights`, `upho_sf`, `upho_qpoints`, `upho_fit`, and
+`upho_plot` commands.
 
 Run `deactivate` when you are done.
 
