@@ -55,11 +55,11 @@ setup(
 
     # This should be your name or the name of the organization which owns the
     # project.
-    author='Yuji Ikeda',  # Optional
+    author='Yuji Ikeda' ' & ' 'Jerry',  # Optional
 
     # This should be a valid email address corresponding to the author listed
     # above.
-    author_email='yuji.ikeda.ac.jp@gmail.com',  # Optional
+    author_email='yuji.ikeda.ac.jp@gmail.com' ' & ' '413170422@cloud.fju.edu.tw',  # Optional
 
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
@@ -78,6 +78,12 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['phonopy>=2.7.0'],  # Optional
+    install_requires=[
+        'numpy',
+        'h5py',
+        'scipy',
+        'spglib',
+        'phonopy==2.14.0',
+    ],
 
     scripts=scripts)

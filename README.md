@@ -6,14 +6,54 @@ Band unfolding for phonons (http://yuzie007.github.io/upho/)
 
 ## Requirements
 
+- setuptools (installation)
 - numpy
 - h5py
+- scipy
+- spglib
 - phonopy>=2.7.0
 
 ## Install
 
+To install the v0.6.6 release directly:
+
 ```bash
 pip install git+https://github.com/yuzie007/upho.git@v0.6.6
+```
+
+To work from this checkout, create a virtual environment in the repository root.
+On Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e .
+```
+
+On macOS or Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+```
+
+The editable install reads the dependencies from `setup.py` and installs this project into the active virtual environment.
+
+It also exposes the `upho_weights`, `upho_sf`,
+`upho_qpoints`, and `upho_fit` commands.
+
+Run `deactivate` when you are done.
+
+The project's CI tests Python 3.7 with Phonopy 2.7.0 and 2.14.0;
+other combinations have not been verified here.
+
+Once you have installed the tools that we require, you can test by using these commands if those tools we have successfully installed.
+
+```bash
+python -m pip show upho
+python -m pip show phonopy
+python -c "import upho; print(upho.__file__)"
 ```
 
 ## Usage and Tutorial

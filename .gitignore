@@ -9,12 +9,14 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
+.env
 lib/
 lib64/
 parts/
@@ -60,3 +62,12 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Generated files in examples/00.L12_Cu3Au
+/examples/00.L12_Cu3Au/FORCE_CONSTANTS
+/examples/00.L12_Cu3Au/band.hdf5
+/examples/00.L12_Cu3Au/phonopy.yaml
+/examples/00.L12_Cu3Au/sf.svg
+/examples/00.L12_Cu3Au/sf_E1.dat
+/examples/00.L12_Cu3Au/sf_E2.dat
+/examples/00.L12_Cu3Au/sf_SR.dat
