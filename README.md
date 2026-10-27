@@ -11,7 +11,9 @@ Band unfolding for phonons (http://yuzie007.github.io/upho/)
 - h5py
 - scipy
 - spglib
-- phonopy>=2.7.0
+- matplotlib
+- phonopy==2.14.0
+- seekpath==2.1.0
 
 ## Install
 

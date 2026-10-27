@@ -19,7 +19,8 @@ RUN python -m pip install \
     "numpy==1.21.6" \
     "scipy==1.7.3" \
     "h5py==3.7.0" \
-    "phonopy==2.14.0"
+    "phonopy==2.14.0" \
+    "seekpath==2.1.0"
 
 COPY . /app
 

@@ -86,6 +86,7 @@ setup(
         'spglib',
         'matplotlib',
         'phonopy==2.14.0',
+        'seekpath==2.1.0',
     ],
 
     scripts=scripts)

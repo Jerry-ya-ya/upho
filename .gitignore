@@ -71,3 +71,10 @@ target/
 /examples/00.L12_Cu3Au/sf_E1.dat
 /examples/00.L12_Cu3Au/sf_E2.dat
 /examples/00.L12_Cu3Au/sf_SR.dat
+
+# Generated files in examples/01.A1_Cu0.75Au0.25
+/examples/01.A1_Cu0.75Au0.25/band.hdf5
+/examples/01.A1_Cu0.75Au0.25/sf.svg
+/examples/01.A1_Cu0.75Au0.25/sf_E1.dat
+/examples/01.A1_Cu0.75Au0.25/sf_E2.dat
+/examples/01.A1_Cu0.75Au0.25/sf_SR.dat
