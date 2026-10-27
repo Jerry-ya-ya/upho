@@ -19,6 +19,10 @@ class TestUnfolderSymmetry(unittest.TestCase):
 
         self.assertEqual(len(rotations_kpoint), 48)
 
+    def test_integer_kpoint(self):
+        rotations, _ = self._symmetry.create_little_group([0, 0, 0])
+        self.assertEqual(len(rotations), 48)
+
     def test_100(self):
         kpoint = np.array([0.5, 0.0, 0.0])  # X: D_4h
         (rotations_kpoint,

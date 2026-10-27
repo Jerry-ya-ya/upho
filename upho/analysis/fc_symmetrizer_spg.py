@@ -19,7 +19,7 @@ class FCSymmetrizerSPG(FCAnalyzerBase):
 
         symmetry = Symmetry(atoms_symmetry)
 
-        symbols = atoms.get_chemical_symbols()
+        symbols = atoms.symbols
         symboltypes = sorted(set(symbols), key=symbols.index)
 
         rotations_cart = get_rotations_cart(atoms_symmetry)
@@ -147,7 +147,7 @@ class FCSymmetrizerSPG(FCAnalyzerBase):
         """
 
         atoms = self._atoms
-        symbols = atoms.get_chemical_symbols()
+        symbols = atoms.symbols
         symboltypes = sorted(set(symbols), key=symbols.index)
         nsymbols = len(symboltypes)
 

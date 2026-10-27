@@ -24,7 +24,7 @@ class TestAverageMasses(unittest.TestCase):
 
     def test_1(self):
         unitcell = read_vasp(os.path.join(POSCAR_DIR, 'POSCAR_omega_disordered_1'))
-        masses = unitcell.get_masses()
+        masses = unitcell.masses
 
         masses_average = calculate_average_masses(masses, self._symmetry)
         masses_expected = np.array([47.867, 91.224, 91.224])
@@ -40,7 +40,7 @@ class TestAverageMasses(unittest.TestCase):
 
     def test_2(self):
         unitcell = read_vasp(os.path.join(POSCAR_DIR, 'POSCAR_omega_disordered_2'))
-        masses = unitcell.get_masses()
+        masses = unitcell.masses
 
         masses_average = calculate_average_masses(masses, self._symmetry)
         masses_expected = np.array([47.867, 69.5455, 69.5455])

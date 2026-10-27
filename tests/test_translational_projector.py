@@ -4,6 +4,14 @@ from upho.phonon.translational_projector import TranslationalProjector
 
 
 class DummyPrimitive(object):
+    @property
+    def primitive_matrix(self):
+        return self.get_primitive_matrix()
+
+    @property
+    def p2s_map(self):
+        return self.get_primitive_to_supercell_map()
+
     def get_primitive_matrix(self):
         primitive_matrix = np.array(
             [[0.25, 0.0, 0.0],
@@ -16,6 +24,17 @@ class DummyPrimitive(object):
         return p2s_map
 
 class DummyAtoms(object):
+    @property
+    def scaled_positions(self):
+        return self.get_scaled_positions()
+
+    @property
+    def symbols(self):
+        return self.get_chemical_symbols()
+
+    def __len__(self):
+        return self.get_number_of_atoms()
+
     def get_scaled_positions(self):
         scaled_positions = np.array(
             [[0.00, 0.0, 0.0],

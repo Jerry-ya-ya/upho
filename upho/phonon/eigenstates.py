@@ -1,6 +1,6 @@
 import numpy as np
 from phonopy.structure.cells import get_primitive
-from phonopy.units import VaspToTHz
+from phonopy.physical_units import get_physical_units
 from upho.phonon.star_creator import StarCreator
 from upho.phonon.translational_projector import TranslationalProjector
 from upho.phonon.rotational_projector import RotationalProjector
@@ -17,14 +17,14 @@ class Eigenstates:
                  primitive_matrix_ideal,
                  star="none",
                  mode="eigenvector",
-                 factor=VaspToTHz,
+                 factor=get_physical_units().DefaultToTHz,
                  verbose=False):
         self._verbose = verbose
         self._mode = mode
 
         self._factor = factor
 
-        self._cell = dynamical_matrix.get_primitive()  # Disordered
+        self._cell = dynamical_matrix.primitive  # Disordered
         self._dynamical_matrix = dynamical_matrix
 
         self._star = star
@@ -73,7 +73,7 @@ class Eigenstates:
 
     def _generate_vectors_adjuster(self):
         # Get the (disordered) unitcell.
-        primitive = self._dynamical_matrix.get_primitive()
+        primitive = self._dynamical_matrix.primitive
         self._vectors_adjuster = VectorsAdjuster(primitive)
 
     def create_q_star(self, q):
@@ -199,13 +199,13 @@ class Eigenstates:
         weights : Weights for the phonon modes of SC on PC.
             'E1' : (natoms_p, nelms, natoms_p, nelms, nbands) complex array
         """
-        primitive_matrix = self._primitive.get_primitive_matrix()
+        primitive_matrix = self._primitive.primitive_matrix
         q_sc = get_q_sc_from_q_pc(q_pc, primitive_matrix)
 
         print("q_sc:", q_sc)
 
-        self._dynamical_matrix.set_dynamical_matrix(q_sc)
-        dm = self._dynamical_matrix.get_dynamical_matrix()
+        self._dynamical_matrix.run(q_sc)
+        dm = self._dynamical_matrix.dynamical_matrix
         with TimeMeasurer('Solve eigenproblem'):
             eigvals, eigvecs = np.linalg.eigh(dm)
 
@@ -387,7 +387,7 @@ class Eigenstates:
         group : String
             Indices for the present q-point.
         """
-        natoms_primitive = self._cell.get_number_of_atoms()
+        natoms_primitive = len(self._cell)
 
         data_dict = {
             'point'            : self.get_point(),
@@ -423,8 +423,8 @@ def get_displacements_from_eigvecs(eigvecs, supercell, q):
         q: Fractional positions in reciprocal space (supercell).
     """
     displacements = np.zeros_like(eigvecs)
-    masses = supercell.get_masses()
-    scaled_positions = supercell.get_scaled_positions()
+    masses = supercell.masses
+    scaled_positions = supercell.scaled_positions
     for i, e in enumerate(eigvecs):
         iatom = i // 3
         p = scaled_positions[iatom]

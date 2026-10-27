@@ -1,9 +1,16 @@
 import io
 import numpy as np
-from upho.cui.settings import _parse_phonopy_conf_strings
+import pytest
+from upho.cui.settings import _parse_phonopy_conf_strings, _parse_primitive_axes
 
 
 class TestSettings:
+    def test_fractional_axes_without_expression_evaluation(self):
+        axes = _parse_primitive_axes("1/2 0 0 0 1 0 0 0 1")
+        np.testing.assert_array_equal(axes, np.diag([0.5, 1.0, 1.0]))
+        with pytest.raises(ValueError):
+            _parse_primitive_axes("1+1 0 0 0 1 0 0 0 1")
+
     def test_comments(self):
         s0 = ''.join([
             'DIM = 2 2 2\n',

@@ -1,5 +1,5 @@
 import h5py
-from phonopy.units import VaspToTHz
+from phonopy.physical_units import get_physical_units
 from upho.phonon.eigenstates import Eigenstates
 
 
@@ -10,7 +10,7 @@ class SinglePoint:
                  dynamical_matrix,
                  unitcell_ideal,
                  primitive_matrix_ideal,
-                 factor=VaspToTHz,
+                 factor=get_physical_units().DefaultToTHz,
                  star="none",
                  mode="eigenvector",
                  verbose=False):

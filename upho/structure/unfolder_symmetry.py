@@ -4,9 +4,10 @@ from phonopy.structure.symmetry import Symmetry
 
 class UnfolderSymmetry(Symmetry):
     def create_little_group(self, kpoint):
+        kpoint = np.asarray(kpoint, dtype=float)
         rotations = self._symmetry_operations["rotations"]
         translations = self._symmetry_operations["translations"]
-        lattice = self._cell.get_cell()
+        lattice = self._cell.cell
 
         rotations_kpoint = []
         translations_kpoint = []
@@ -38,7 +39,7 @@ class UnfolderSymmetry(Symmetry):
             Matrices to obtain arms of the star from the given kpoint.
         """
         rotations = self._symmetry_operations["rotations"]
-        lattice = self._cell.get_cell()
+        lattice = self._cell.cell
 
         def get_dist(tmp, arm):
             diff = tmp - arm

@@ -1,4 +1,5 @@
 import re
+from fractions import Fraction
 import numpy as np
 
 
@@ -80,7 +81,7 @@ def _parse_dim(v):
 
 def _parse_primitive_axes(v):
     k = 'PRIMITIVE_AXES'
-    matrix = [float(eval(_)) for _ in v.split()]
+    matrix = [float(Fraction(value)) for value in v.split()]
     length = len(matrix)
     if length == 9:
         matrix = np.array(matrix).reshape(3, 3)
@@ -94,7 +95,7 @@ def _parse_primitive_axes(v):
 def _parse_band(v):
     bands = []
     for section in v.split(','):
-        points = [eval(x) for x in section.split()]
+        points = [float(Fraction(value)) for value in section.split()]
         if len(points) % 3 != 0 or len(points) < 6:
             raise ValueError("BAND is incorrectly set.")
         bands.append(np.array(points).reshape(-1, 3))

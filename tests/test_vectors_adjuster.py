@@ -19,6 +19,14 @@ class DummyAtoms(object):
     def get_masses(self):
         return self._masses
 
+    @property
+    def scaled_positions(self):
+        return self._scaled_positions
+
+    @property
+    def masses(self):
+        return self._masses
+
 
 class TestVectorsAdjuster(unittest.TestCase):
     def setUp(self):

@@ -57,7 +57,7 @@ class TranslationalProjector:
         ----
         Creations of lattice_vectors and mappings should be separated.
         """
-        primitive_matrix = self._primitive.get_primitive_matrix()
+        primitive_matrix = self._primitive.primitive_matrix
         supercell_matrix = np.linalg.inv(primitive_matrix)
         lattice_vectors = find_lattice_vectors(supercell_matrix)
         return lattice_vectors
@@ -108,7 +108,7 @@ class TranslationalProjector:
         ndim = self._ndim
         primitive = self._primitive
 
-        p2s_map = primitive.get_primitive_to_supercell_map()
+        p2s_map = primitive.p2s_map
         indices = MappingsModifier(p2s_map).expand_mappings(ndim)
 
         expanded_mappings = self._expanded_mappings

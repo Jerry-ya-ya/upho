@@ -43,7 +43,7 @@ class FCAnalyzerBase:
         self.check_consistency()
 
     def check_consistency(self):
-        number_of_atoms = self.get_atoms().get_number_of_atoms()
+        number_of_atoms = len(self.get_atoms())
         number_of_atoms_fc = self.get_force_constants().shape[0]
         if number_of_atoms != number_of_atoms_fc:
             print(number_of_atoms, number_of_atoms_fc)

@@ -3,7 +3,8 @@ import numpy as np
 
 def read_band_yaml(yaml_file="band.yaml"):
     import yaml
-    data = yaml.load(open(yaml_file, "r"))
+    with open(yaml_file, "r") as stream:
+        data = yaml.safe_load(stream)
     nqpoint = data['nqpoint']
     npath = data['npath']
     distance = np.zeros(nqpoint)
@@ -37,5 +38,5 @@ def read_band_hdf5(hdf5_file="band.hdf5"):
 def read_input(filename_input):
     import yaml
     with open(filename_input, 'r') as f:
-        dict_input = yaml.load(f)
+        dict_input = yaml.safe_load(f)
     return dict_input

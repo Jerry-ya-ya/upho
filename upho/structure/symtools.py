@@ -3,9 +3,11 @@ import spglib
 
 
 def get_rotations_cart(atoms):
-    cell = atoms.get_cell()
-    dataset = spglib.get_symmetry_dataset(atoms)
-    rotations = dataset["rotations"]
+    cell = atoms.cell
+    dataset = spglib.get_symmetry_dataset(
+        (atoms.cell, atoms.scaled_positions, atoms.numbers)
+    )
+    rotations = dataset.rotations
 
     rotations_cart = [
         np.dot(np.dot(cell.T, r), np.linalg.inv(cell.T)) for r in rotations

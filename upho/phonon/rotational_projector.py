@@ -147,7 +147,7 @@ class RotationalProjector:
 
     def _create_rotations_cart(self, rotations):
         rotations_cart = []
-        cell = self._atoms.get_cell()
+        cell = self._atoms.cell
         for r in rotations:
             rotation_cart = np.dot(np.dot(cell.T, r), np.linalg.inv(cell.T))
             rotations_cart.append(rotation_cart)
@@ -187,14 +187,14 @@ class RotationalProjector:
 
         ir_dimensions = self._ir_dimensions
 
-        natoms = self._atoms.get_number_of_atoms()
+        natoms = len(self._atoms)
         ndim = kpoint.shape[0]  # The number of dimensions of space
         order = rotations.shape[0]
 
         expanded_mappings_inv = self._mappings_modifier.expand_mappings(
             ndim, is_inverse=True)
 
-        # scaled_positions = self._atoms.get_scaled_positions()
+        # scaled_positions = self._atoms.scaled_positions
         # phases = np.exp(2.0j * np.pi * np.dot(scaled_positions, kpoint))
         # phases = np.repeat(phases, ndim)
 

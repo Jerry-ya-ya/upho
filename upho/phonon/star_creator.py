@@ -34,7 +34,7 @@ class StarCreator:
         self._symmetry = symmetry
 
     def get_rotations(self):
-        return self._symmetry.get_dataset()["rotations"]
+        return self._symmetry.dataset.rotations
 
     def create_star(self, kpoint):
         """Create the star of the given kpoint
@@ -52,8 +52,9 @@ class StarCreator:
         transformation_matrices : n x 3 x 3 array
             Matrices to obtain arms of the star from the given kpoint.
         """
-        rotations = self._symmetry.get_dataset()["rotations"]
-        lattice = self._atoms.get_cell()
+        kpoint = np.asarray(kpoint, dtype=float)
+        rotations = self._symmetry.dataset.rotations
+        lattice = self._atoms.cell
 
         def get_dist(tmp, arm):
             diff = tmp - arm

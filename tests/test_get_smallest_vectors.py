@@ -36,7 +36,7 @@ class TestRotationalProjector(unittest.TestCase):
         ])
 
     def test(self):
-        natoms = self._atoms.get_number_of_atoms()
+        natoms = len(self._atoms)
         primitive = get_primitive(self._atoms, self._primitive_matrix)
         symprec = 1e-6
 
@@ -48,7 +48,7 @@ class TestRotationalProjector(unittest.TestCase):
         dt_old = 0.0
         dt_new = 0.0
         for i in range(natoms):
-            for j in range(primitive.get_number_of_atoms()):
+            for j in range(len(primitive)):
                 t0 = time.time()
                 tmp0 = smallest_vectors0[i, j, :multiplicity0[i][j]]
                 t1 = time.time()

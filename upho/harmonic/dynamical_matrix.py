@@ -33,14 +33,14 @@ class UnfolderDynamicalMatrix(DynamicalMatrix):
         self._decimals = decimals
         self._symprec = symprec
 
-        self._p2s_map = primitive.get_primitive_to_supercell_map()
-        self._s2p_map = primitive.get_supercell_to_primitive_map()
-        p2p_map = primitive.get_primitive_to_primitive_map()
+        self._p2s_map = primitive.p2s_map
+        self._s2p_map = primitive.s2p_map
+        p2p_map = primitive.p2p_map
         self._p2p_map = [p2p_map[self._s2p_map[i]]
                          for i in range(len(self._s2p_map))]
         self._smallest_vectors, self._multiplicity = \
             get_smallest_vectors(supercell, primitive, symprec)
-        self._mass = self._pcell.get_masses()
+        self._mass = self._pcell.masses
         # Non analytical term correction
         self._nac = False
 
@@ -54,8 +54,8 @@ def get_equivalent_smallest_vectors_np(
         symprec):
     distances = []
     differences = []
-    reduced_bases = get_reduced_bases(supercell.get_cell(), symprec)
-    positions = np.dot(supercell.get_positions(), np.linalg.inv(reduced_bases))
+    reduced_bases = get_reduced_bases(supercell.cell, symprec)
+    positions = np.dot(supercell.positions, np.linalg.inv(reduced_bases))
 
     # Atomic positions are confined into the lattice made of reduced bases.
     positions -= np.rint(positions)
@@ -103,9 +103,9 @@ def get_smallest_vectors(supercell, primitive, symprec):
       [atom_super, atom_primitive]
     """
 
-    p2s_map = primitive.get_primitive_to_supercell_map()
-    size_super = supercell.get_number_of_atoms()
-    size_prim = primitive.get_number_of_atoms()
+    p2s_map = primitive.p2s_map
+    size_super = len(supercell)
+    size_prim = len(primitive)
     shortest_vectors = np.zeros((size_super, size_prim, 27, 3), dtype='double')
     multiplicity = np.zeros((size_super, size_prim), dtype='intc')
 
@@ -114,7 +114,7 @@ def get_smallest_vectors(supercell, primitive, symprec):
             vectors = get_equivalent_smallest_vectors_np(i,
                                                       s_j,
                                                       supercell,
-                                                      primitive.get_cell(),
+                                                      primitive.cell,
                                                       symprec)
             multiplicity[i][j] = len(vectors)
             for k, elem in enumerate(vectors):

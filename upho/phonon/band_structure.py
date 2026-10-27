@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from phonopy.units import VaspToTHz
+from phonopy.physical_units import get_physical_units
 from phonopy.structure.cells import get_primitive
 from upho.phonon.eigenstates import Eigenstates
 
@@ -14,7 +14,7 @@ class BandStructure:
                  is_eigenvectors=False,
                  is_band_connection=False,
                  group_velocity=None,
-                 factor=VaspToTHz,
+                 factor=get_physical_units().DefaultToTHz,
                  star="none",
                  mode="eigenvector",
                  verbose=False):
@@ -76,7 +76,7 @@ class BandStructure:
     def _shift_point(self, qpoint):
         self._distance += np.linalg.norm(
             np.dot(qpoint - self._lastq,
-                   np.linalg.inv(self._cell.get_cell()).T))
+                   np.linalg.inv(self._cell.cell).T))
         self._lastq = qpoint.copy()
 
     def _set_band(self, verbose=False):
@@ -104,11 +104,11 @@ class BandStructure:
             eigenstates.write_hdf5(self._hdf5_file, group=group)
 
     def get_unitcell_orig(self):
-        unitcell_orig = self._dynamical_matrix.get_primitive()
+        unitcell_orig = self._dynamical_matrix.primitive
         return unitcell_orig
 
     def get_reduced_elements(self):
         unitcell_orig = self.get_unitcell_orig()
-        elements = unitcell_orig.get_chemical_symbols()
+        elements = unitcell_orig.symbols
         reduced_elements = sorted(set(elements), key=elements.index)
         return reduced_elements

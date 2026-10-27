@@ -11,7 +11,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, 'm-3m')
 
         rotations = symmetry.get_group_of_wave_vector([0.00, 0.25, 0.25])[0]
@@ -29,7 +29,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, 'm-3m')
 
         rotations = symmetry.get_group_of_wave_vector([0.00, 0.25, -0.25])[0]
@@ -66,7 +66,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '6/mmm')
 
         p = [0.0, 0.0, 0.5]  # A (6/mmm)
@@ -99,7 +99,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)  # 213
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '432')
 
         p = [0.0, 0.5, 0.5]  # X (422)
@@ -112,7 +112,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)  # 216
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '-43m')
 
         p = [0.0, 0.5, 0.5]  # X (-42m)
@@ -125,7 +125,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)  # 216
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '6/m')
 
         p = [1.0 / 3.0, 1.0 / 3.0, 0.0]  # K (-6)
@@ -146,7 +146,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)  # 178
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '622')
 
         p = [1.0 / 3.0, 1.0 / 3.0, 0.0]  # K (32)
@@ -159,7 +159,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)  # 148
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '-3')
 
     def test_thcl4(self):
@@ -168,7 +168,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)  # 88
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '4/m')
 
     def test_22(self):
@@ -177,7 +177,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '222')
 
     def test_97(self):
@@ -186,7 +186,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '422')
 
     def test_b_h(self):
@@ -195,7 +195,7 @@ class TestIrreps(unittest.TestCase):
         atoms = read_vasp(filename)
         symmetry = UnfolderSymmetry(atoms)
 
-        rotations = symmetry.get_pointgroup_operations()
+        rotations = symmetry.pointgroup_operations
         self.check_irreps(rotations, '-6m2')
 
     def check_irreps(self, rotations, pointgroup_symbol):

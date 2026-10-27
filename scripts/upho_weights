@@ -6,7 +6,7 @@ from pprint import pprint
 import numpy as np
 from phonopy import file_IO
 from phonopy.interface.calculator import read_crystal_structure
-from phonopy.units import VaspToTHz
+from phonopy.physical_units import get_physical_units
 from phonopy.structure.cells import print_cell
 from phonopy.phonon.band_structure import get_band_qpoints, get_band_qpoints_by_seekpath
 from phonopy.version import __version__ as phonopy_version
@@ -43,24 +43,24 @@ def get_default_dict_input():
 
 def print_cells(phonon, unitcell_filename):
     print("Crsytal structure is read from '%s'." % unitcell_filename)
-    supercell = phonon.get_supercell()
-    unitcell = phonon.get_unitcell()
-    primitive = phonon.get_primitive()
-    p2p_map = primitive.get_primitive_to_primitive_map()
+    supercell = phonon.supercell
+    unitcell = phonon.unitcell
+    primitive = phonon.primitive
+    p2p_map = primitive.p2p_map
     mapping = np.array(
-        [p2p_map[x] for x in primitive.get_supercell_to_primitive_map()], dtype="intc"
+        [p2p_map[x] for x in primitive.s2p_map], dtype="intc"
     )
-    s_indep_atoms = phonon.get_symmetry().get_independent_atoms()
+    s_indep_atoms = phonon.symmetry.get_independent_atoms()
     p_indep_atoms = mapping[s_indep_atoms]
-    if unitcell.get_number_of_atoms() == primitive.get_number_of_atoms():
+    if len(unitcell) == len(primitive):
         print("-" * 32 + " unit cell " + "-" * 33)
         print_cell(primitive, stars=p_indep_atoms)
     else:
-        u2s_map = supercell.get_unitcell_to_supercell_map()
+        u2s_map = supercell.u2s_map
         print("-" * 30 + " primitive cell " + "-" * 30)
         print_cell(primitive, stars=p_indep_atoms)
         print("-" * 32 + " unit cell " + "-" * 33)  # 32 + 11 + 33 = 76
-        u2u_map = supercell.get_unitcell_to_unitcell_map()
+        u2u_map = supercell.u2u_map
         u_indep_atoms = [u2u_map[x] for x in s_indep_atoms]
         print_cell(unitcell, mapping=mapping[u2s_map], stars=u_indep_atoms)
     print("-" * 32 + " super cell " + "-" * 32)
@@ -143,7 +143,7 @@ def main():
     add_arguments(parser)
     args = parser.parse_args()
 
-    factor = VaspToTHz  # TEST
+    factor = get_physical_units().DefaultToTHz  # TEST
 
     print_version()
 
@@ -206,7 +206,7 @@ def main():
     # Print cells
     print_cells(phonon, unitcell_filename)
 
-    phonon.set_force_constants(fc)
+    phonon.force_constants = fc
 
     if args.average_force_constants:
         phonon.average_force_constants()

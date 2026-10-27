@@ -1,14 +1,7 @@
 language: python
-
-env:
-  - PHONOPY_VERSION=2.7.0
-  - PHONOPY_VERSION=2.8.0
-  - PHONOPY_VERSION=2.9.0
-
+python:
+  - "3.13"
 install:
-  - python -mpip install phonopy==$PHONOPY_VERSION
-  - python -mpip install pytest pytest-cov
-  - python -mpip install codecov coverage
-script: python -mpytest tests -ra --cov=./ --log-level=DEBUG
-after_success:
-  - codecov
+  - python -m pip install -e . pytest
+script:
+  - python -m pytest tests -q

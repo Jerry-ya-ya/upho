@@ -72,6 +72,7 @@ setup(
     #   py_modules=["my_module"],
     #
     packages=find_packages(),  # Required
+    python_requires='>=3.13,<3.14',
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -80,13 +81,14 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'numpy',
-        'h5py',
-        'scipy',
-        'spglib',
-        'matplotlib',
-        'phonopy==2.14.0',
-        'seekpath==2.1.0',
+        'numpy>=2.5,<3',
+        'h5py>=3.16,<4',
+        'scipy>=1.18,<2',
+        'spglib>=2.8,<3',
+        'matplotlib>=3.11,<4',
+        'phonopy==2.48.0',
+        'seekpath>=2.2.2,<3',
+        'PyYAML>=6,<7',
     ],
 
     scripts=scripts)

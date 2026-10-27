@@ -125,9 +125,9 @@ class PhonopyUnfolding(Phonopy):
             is_gamma_center=is_gamma_center,
             star=self._star,
             group_velocity=self._group_velocity,
-            rotations=self._primitive_symmetry.get_pointgroup_operations(),
+            rotations=self._primitive_symmetry.pointgroup_operations,
             factor=self._factor,
-            use_lapack_solver=self._use_lapack_solver,
+            use_lapack_solver=False,
             mode=self._mode,
         )
         return True
@@ -165,7 +165,7 @@ class PhonopyUnfolding(Phonopy):
         elif self._force_constants is None:
             print("Warning: Force constants are not prepared.")
             return False
-        elif self._primitive.get_masses() is None:
+        elif self._primitive.masses is None:
             print("Warning: Atomic masses are not correctly set.")
             return False
         else:
@@ -190,8 +190,8 @@ class PhonopyUnfolding(Phonopy):
             self._primitive_ideal, self._symprec, self._is_symmetry
         )
 
-        n0 = len(self._symmetry.get_pointgroup_operations())
-        n1 = len(self._primitive_symmetry.get_pointgroup_operations())
+        n0 = len(self._symmetry.pointgroup_operations)
+        n1 = len(self._primitive_symmetry.pointgroup_operations)
         if n0 != n1:
             print(
                 "Warning: Point group symmetries of supercell and primitive "
@@ -221,19 +221,19 @@ class PhonopyUnfolding(Phonopy):
         self._primitive_ideal = get_primitive(
             self._supercell_ideal, trans_mat, self._symprec
         )
-        num_satom = self._supercell_ideal.get_number_of_atoms()
-        num_patom = self._primitive_ideal.get_number_of_atoms()
+        num_satom = len(self._supercell_ideal)
+        num_patom = len(self._primitive_ideal)
         if abs(num_satom * np.linalg.det(trans_mat) - num_patom) < 0.1:
             return True
         else:
             return False
 
     def average_masses(self):
-        masses = self._unitcell.get_masses()
+        masses = self._unitcell.masses
         masses_average = calculate_average_masses(
             masses, Symmetry(self._unitcell_ideal)
         )
-        self._unitcell.set_masses(masses_average)
+        self._unitcell.masses = masses_average
 
         self._build_supercell()
         self._build_primitive_cell()
@@ -254,9 +254,7 @@ class PhonopyUnfolding(Phonopy):
         fc_symmetrizer_spg.average_force_constants_spg()
         fc_symmetrizer_spg.write_force_constants_symmetrized()
         fc_average = fc_symmetrizer_spg.get_force_constants_symmetrized()
-        self.set_force_constants(
-            fc_average
-        )  # Dynamical matrices are also prepared inside.
+        self.force_constants = fc_average  # Also prepares dynamical matrices.
 
 
 def calculate_average_masses(masses, symmetry):

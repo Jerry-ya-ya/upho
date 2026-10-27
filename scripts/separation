@@ -44,7 +44,7 @@ class Separation:
     def _shift_point(self, qpoint):
         self._distance += np.linalg.norm(
             np.dot(qpoint - self._lastq,
-                   np.linalg.inv(self._cell.get_cell()).T))
+                   np.linalg.inv(self._cell.cell).T))
         self._lastq = qpoint.copy()
 
     def write_input(self):

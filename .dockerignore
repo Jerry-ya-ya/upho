@@ -1,0 +1,10 @@
+.git
+.venv
+.env
+__pycache__
+*.pyc
+*.egg-info
+.pytest_cache
+examples/**/band.hdf5
+examples/**/sf*.dat
+examples/**/sf.svg

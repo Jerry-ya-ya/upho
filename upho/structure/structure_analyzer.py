@@ -1,6 +1,7 @@
 import sys
 import itertools
 import numpy as np
+from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.symmetry import Symmetry
 
 
@@ -20,9 +21,9 @@ class StructureAnalyzer:
 
     def generate_dictionary(self):
 
-        cell = self._atoms.get_cell()
-        number_of_atoms = self._atoms.get_number_of_atoms()
-        chemical_symbols = self._atoms.get_chemical_symbols()
+        cell = self._atoms.cell
+        number_of_atoms = len(self._atoms)
+        chemical_symbols = self._atoms.symbols
 
         dictionary = convert_cell_to_lc(cell)
 
@@ -44,15 +45,15 @@ class StructureAnalyzer:
     def create_symmetry_dataset(self):
         symmetry_dataset = self.get_symmetry_dataset()
         self._dictionary.update({
-            "spg_number": symmetry_dataset["number"],
-            "spg_international": symmetry_dataset["international"],
+            "spg_number": symmetry_dataset.number,
+            "spg_international": symmetry_dataset.international,
         })
 
     def generate_distance_matrix(self):
 
-        cell = self._atoms.get_cell()
-        scaled_positions = self._atoms.get_scaled_positions()
-        number_of_atoms = self._atoms.get_number_of_atoms()
+        cell = self._atoms.cell
+        scaled_positions = self._atoms.scaled_positions
+        number_of_atoms = len(self._atoms)
 
         expansion = range(-1, 2)
         distance_matrix = np.zeros((number_of_atoms, number_of_atoms))
@@ -155,7 +156,7 @@ class StructureAnalyzer:
 
     def get_index_from_position(self, position, symprec=1e-6):
 
-        for i, p in enumerate(self._atoms.get_scaled_positions()):
+        for i, p in enumerate(self._atoms.scaled_positions):
             diff = position - p
             diff -= np.rint(diff)
             if all([abs(x) < symprec for x in diff]):
@@ -165,7 +166,7 @@ class StructureAnalyzer:
         return None
 
     def write_distance_matrix(self):
-        number_of_atoms = self._atoms.get_number_of_atoms()
+        number_of_atoms = len(self._atoms)
         for i1 in range(number_of_atoms):
             for i2 in range(number_of_atoms):
                 distance = self._distance_matrix[i1, i2]
@@ -175,9 +176,9 @@ class StructureAnalyzer:
     def write_sorted_distance_matrix(self):
         """Write distances between an atom and another one.
         """
-        number_of_atoms = self._atoms.get_number_of_atoms()
-        chemical_symbols = self._atoms.get_chemical_symbols()
-        positions = self._atoms.get_scaled_positions()
+        number_of_atoms = len(self._atoms)
+        chemical_symbols = self._atoms.symbols
+        positions = self._atoms.scaled_positions
 #        sys.stdout.write("# {:4d}\n".format(number_of_atoms))
         for i1, c1 in enumerate(chemical_symbols):
             distances_index = np.argsort(self._distance_matrix[i1])
@@ -201,42 +202,43 @@ class StructureAnalyzer:
         return self
 
     def set_scaled_positions(self, scaled_positions):
-        self._atoms.set_scaled_positions(scaled_positions)
+        self._atoms.scaled_positions = scaled_positions
         return self
 
     def set_positions(self, positions):
-        cell = self._atoms.get_cell()
+        cell = self._atoms.cell
         scaled_positions = np.dot(positions, np.linalg.inv(cell))
         return self.set_scaled_positions(scaled_positions)
 
     def displace_scaled_positions(self, scaled_displacements):
-        scaled_positions = self._atoms.get_scaled_positions()
+        scaled_positions = self._atoms.scaled_positions
         scaled_positions += scaled_displacements
-        self._atoms.set_scaled_positions(scaled_positions)
+        self._atoms.scaled_positions = scaled_positions
         return self
 
     def displace_positions(self, displacements):
-        cell = self._atoms.get_cell()
+        cell = self._atoms.cell
         scaled_displacements = np.dot(displacements, np.linalg.inv(cell))
         return self.displace_scaled_positions(scaled_displacements)
 
     def shift_to_origin(self, index):
-        scaled_displacements = -self._atoms.get_scaled_positions()[index]
+        scaled_displacements = -self._atoms.scaled_positions[index]
         return self.displace_scaled_positions(scaled_displacements)
 
     def remove_atoms_indices(self, indices):
         if isinstance(indices, int):
             indices = [indices]
-        indices = sorted(set(indices), reverse=True)
-        scaled_positions = self._atoms.get_scaled_positions()
-        chemical_symbols = self._atoms.get_chemical_symbols()
-        for i in indices:
-            scaled_positions = np.delete(scaled_positions, i, 0)
-            del chemical_symbols[i]
-        self.set_scaled_positions(scaled_positions)
-        self.set_chemical_symbols(chemical_symbols)
-        self._atoms._symbols_to_numbers()
-        self._atoms._symbols_to_masses()
+        atoms = self._atoms
+        keep = np.ones(len(atoms), dtype=bool)
+        keep[list(set(indices))] = False
+        moments = atoms.magnetic_moments
+        self._atoms = PhonopyAtoms(
+            symbols=np.array(atoms.symbols)[keep].tolist(),
+            masses=atoms.masses[keep],
+            magnetic_moments=moments[keep] if moments is not None else None,
+            cell=atoms.cell,
+            scaled_positions=atoms.scaled_positions[keep],
+        )
         return self
 
     def remove_atoms_outside(self, region):
@@ -249,7 +251,7 @@ class StructureAnalyzer:
         """
         self.wrap_into_cell()
         region = np.array(region)
-        scaled_positions = self._atoms.get_scaled_positions()
+        scaled_positions = self._atoms.scaled_positions
         indices_removed = []
         for ix in range(3):
             for i, sp in enumerate(scaled_positions):
@@ -267,9 +269,9 @@ class StructureAnalyzer:
         """
         self.wrap_into_cell()
         vacuum_layer = np.array(vacuum_layer)
-        cell = self._atoms.get_cell()
-        scaled_positions = self._atoms.get_scaled_positions()
-        natoms = self._atoms.get_number_of_atoms()
+        cell = self._atoms.cell
+        scaled_positions = self._atoms.scaled_positions
+        natoms = len(self._atoms)
         for ix in range(3):
             cell[ix] *= (1.0 + sum(vacuum_layer[ix, :]))
             for i in range(natoms):
@@ -280,17 +282,17 @@ class StructureAnalyzer:
         return self
 
     def wrap_into_cell(self):
-        scaled_positions = self.get_atoms().get_scaled_positions()
+        scaled_positions = self.get_atoms().scaled_positions
         scaled_positions -= np.floor(scaled_positions)
         self.set_scaled_positions(scaled_positions)
         return self
 
     def set_cell(self, cell):
-        self._atoms.set_cell(cell)
+        self._atoms.cell = cell
         return self
 
     def set_chemical_symbols(self, symbols):
-        self._atoms.set_chemical_symbols(symbols)
+        self._atoms.symbols = symbols
         return self
 
     def deform_cell_left(self, matrix):
@@ -298,9 +300,9 @@ class StructureAnalyzer:
         """
         matrix = _get_matrix(matrix)
         # Generate lattice vectors for the deformed cell.
-        cell = self._atoms.get_cell()
+        cell = self._atoms.cell
         cell = np.dot(matrix, cell.T).T
-        self._atoms.set_cell(cell)
+        self._atoms.cell = cell
 
         self.update_attributes()
 
@@ -311,9 +313,9 @@ class StructureAnalyzer:
         """
         matrix = _get_matrix(matrix)
         # Generate lattice vectors for the deformed cell.
-        cell = self._atoms.get_cell()
+        cell = self._atoms.cell
         cell = np.dot(cell.T, matrix).T
-        self._atoms.set_cell(cell)
+        self._atoms.cell = cell
 
         self.update_attributes()
 
@@ -326,20 +328,21 @@ class StructureAnalyzer:
         """
         dim = _get_matrix(dim)
 
-        # Generate lattice vectors for the suprecell.
-        cell = self._atoms.get_cell()
-        cell = np.dot(cell.T, dim).T
-        self._atoms.set_cell(cell)
-
-        self._generate_supercell_positions(dim, prec)
-
-        nexpansion = np.rint(np.abs(np.linalg.det(dim)))
-        chemical_symbols_new = []
-        for chemical_symbol in self._atoms.get_chemical_symbols():
-            chemical_symbols_new += [chemical_symbol] * nexpansion
-        self._atoms.set_chemical_symbols(chemical_symbols_new)
-        self._atoms._symbols_to_numbers()
-        self._atoms._symbols_to_masses()
+        atoms = self._atoms
+        cell = np.dot(atoms.cell.T, dim).T
+        positions = self._generate_supercell_positions(dim, prec)
+        nexpansion = int(np.rint(np.abs(np.linalg.det(dim))))
+        moments = atoms.magnetic_moments
+        self._atoms = PhonopyAtoms(
+            symbols=[symbol for symbol in atoms.symbols for _ in range(nexpansion)],
+            masses=np.repeat(atoms.masses, nexpansion),
+            magnetic_moments=(
+                np.repeat(moments, nexpansion, axis=0)
+                if moments is not None else None
+            ),
+            cell=cell,
+            scaled_positions=positions,
+        )
 
         self.update_attributes()
 
@@ -349,7 +352,7 @@ class StructureAnalyzer:
         """Generate scaled positions in the supercell."""
         translation_vectors = find_lattice_vectors(dim, prec=prec)
 
-        positions = self._atoms.get_scaled_positions()
+        positions = self._atoms.scaled_positions
 
         # Convert positions to into the fractional coordinates for SC.
         positions = np.dot(np.linalg.inv(dim), positions.T).T
@@ -357,7 +360,7 @@ class StructureAnalyzer:
         supercell_positions = (positions[:, None] +
                                translation_vectors[None, :])
         supercell_positions = supercell_positions.reshape(-1, 3)
-        self.set_scaled_positions(supercell_positions)
+        return supercell_positions
 
     def sort_by_coordinates(self, index, sorted_by_symbols=False):
         """
@@ -365,13 +368,13 @@ class StructureAnalyzer:
         index:
             0: a, 1: b, 2: c
         """
-        symbols = self._atoms.get_chemical_symbols()
-        positions = self._atoms.get_scaled_positions()
+        symbols = self._atoms.symbols
+        positions = self._atoms.scaled_positions
         order = list(symbols)
         data = zip(symbols, positions)
         data = sorted(data, key=lambda x: x[1][index])
-        self.set_chemical_symbols(zip(*data)[0])
-        self.set_scaled_positions(zip(*data)[1])
+        self.set_chemical_symbols([symbol for symbol, _ in data])
+        self.set_scaled_positions([position for _, position in data])
         if sorted_by_symbols:
             self = self.sort_by_symbols(order=order)
         self._atoms._symbols_to_numbers()
@@ -383,14 +386,14 @@ class StructureAnalyzer:
 
         Positions are sorted by the combined chemical symbols.
         """
-        symbols = self._atoms.get_chemical_symbols()
-        positions = self._atoms.get_scaled_positions()
+        symbols = self._atoms.symbols
+        positions = self._atoms.scaled_positions
         if order is None:
             order = list(symbols)
         data = zip(symbols, positions)
         data = sorted(data, key=lambda x: order.index(x[0]))
-        self.set_chemical_symbols(zip(*data)[0])
-        self.set_scaled_positions(zip(*data)[1])
+        self.set_chemical_symbols([symbol for symbol, _ in data])
+        self.set_scaled_positions([position for _, position in data])
         self._atoms._symbols_to_numbers()
         self._atoms._symbols_to_masses()
         return self
@@ -402,7 +405,7 @@ class StructureAnalyzer:
         return self._atoms
 
     def get_cell(self):
-        return self._atoms.get_cell()
+        return self._atoms.cell
 
     def get_scaled_distances(self):
         return self._scaled_distances.copy()
@@ -411,26 +414,26 @@ class StructureAnalyzer:
         return self._distance_matrix.copy()
 
     def change_volume(self, volume):
-        cell_current = self._atoms.get_cell()
+        cell_current = self._atoms.cell
         volume_current = np.linalg.det(cell_current)
         scale = (volume / volume_current) ** (1.0 / 3.0)
-        self._atoms.set_cell(cell_current * scale)
+        self._atoms.cell = cell_current * scale
         return self
 
     def change_volume_per_atom(self, volume_per_atom):
-        volume = volume_per_atom * self._atoms.get_number_of_atoms()
+        volume = volume_per_atom * len(self._atoms)
         return self.change_volume(volume)
 
     def get_symmetry_dataset(self):
-        return Symmetry(self._atoms).get_dataset()
+        return Symmetry(self._atoms).dataset
 
     def get_mappings_for_symops(self, prec=1e-6):
         """Get mappings for symmetry operations."""
-        natoms = self._atoms.get_number_of_atoms()
+        natoms = len(self._atoms)
 
         dataset = self.get_symmetry_dataset()
-        rotations = dataset["rotations"]
-        translations = dataset["translations"]
+        rotations = dataset.rotations
+        translations = dataset.translations
         nopr = len(rotations)
         mappings = -1 * np.ones((nopr, natoms), dtype=int)
         for iopr, (r, t) in enumerate(zip(rotations, translations)):
@@ -456,7 +459,7 @@ class StructureAnalyzer:
             Note that if the rotation and the translation is not a symmetry
             operations, the returned values could be strange.
         """
-        scaled_positions = self._atoms.get_scaled_positions()
+        scaled_positions = self._atoms.scaled_positions
         transformed_scaled_positions = transform_scaled_positions(
             scaled_positions, rotation, translation)
         return transformed_scaled_positions
@@ -472,7 +475,7 @@ class StructureAnalyzer:
             mapping (n integral array):
                 Indices are for new numbers and contents are for old ones.
         """
-        chemical_symbols = self._atoms.get_chemical_symbols()
+        chemical_symbols = self._atoms.symbols
         transformed_scaled_positions = (
             self.extract_transformed_scaled_positions(rotation, translation))
         mapping = self.extract_mapping_for_atoms(
@@ -490,9 +493,9 @@ class StructureAnalyzer:
             mapping (n integral array):
                 Indices are for new numbers and contents are for old ones.
         """
-        natoms = self._atoms.get_number_of_atoms()
-        symbols_old = np.array(self._atoms.get_chemical_symbols())
-        positions_old = self._atoms.get_scaled_positions()
+        natoms = len(self._atoms)
+        symbols_old = np.array(self._atoms.symbols)
+        positions_old = self._atoms.scaled_positions
 
         diff = positions_new[:, None, :] - positions_old[None, :, :]
         wrapped_dpos = diff - np.rint(diff)

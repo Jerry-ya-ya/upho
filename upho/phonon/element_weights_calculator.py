@@ -17,8 +17,8 @@ class ElementWeightsCalculator(object):
         self._extract_map_atoms_u2p(primitive)
 
     def _extract_map_elements(self, unitcell):
-        natoms_u = unitcell.get_number_of_atoms()
-        elements = unitcell.get_chemical_symbols()
+        natoms_u = len(unitcell)
+        elements = unitcell.symbols
         reduced_elements = sorted(set(elements), key=elements.index)
 
         map_elements = []
@@ -33,8 +33,8 @@ class ElementWeightsCalculator(object):
         self._reduced_elements = reduced_elements
 
     def _extract_map_atoms_u2p(self, primitive):
-        p2s_map = primitive.get_primitive_to_supercell_map()
-        s2p_map = primitive.get_supercell_to_primitive_map()
+        p2s_map = primitive.p2s_map
+        s2p_map = primitive.s2p_map
         natoms_u = len(s2p_map)
 
         map_atoms_u2p = []

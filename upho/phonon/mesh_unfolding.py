@@ -1,5 +1,5 @@
 import numpy as np
-from phonopy.units import VaspToTHz
+from phonopy.physical_units import get_physical_units
 from phonopy.structure.grid_points import GridPoints
 from phonopy.phonon.mesh import Mesh
 from phonopy.structure.cells import get_primitive
@@ -20,7 +20,7 @@ class MeshUnfolding(Mesh):
                  star="none",
                  group_velocity=None,
                  rotations=None, # Point group operations in real space
-                 factor=VaspToTHz,
+                 factor=get_physical_units().DefaultToTHz,
                  use_lapack_solver=False,
                  mode="eigenvector"):
 
@@ -43,15 +43,15 @@ class MeshUnfolding(Mesh):
         self._use_lapack_solver = use_lapack_solver
 
         self._gp = GridPoints(self._mesh,
-                              np.linalg.inv(self._cell.get_cell()),
+                              np.linalg.inv(self._cell.cell),
                               q_mesh_shift=shift,
                               is_gamma_center=is_gamma_center,
                               is_time_reversal=is_time_reversal,
                               rotations=rotations,
                               is_mesh_symmetry=is_mesh_symmetry)
 
-        self._qpoints = self._gp.get_ir_qpoints()
-        self._weights = self._gp.get_ir_grid_weights()
+        self._qpoints = self._gp.qpoints
+        self._weights = self._gp.weights
 
         self._star = star
 
@@ -78,8 +78,8 @@ class MeshUnfolding(Mesh):
     def write_yaml(self):
         w = open('mesh.yaml', 'w')
         eigenvalues = self._eigenvalues
-        natom = self._cell.get_number_of_atoms()
-        lattice = np.linalg.inv(self._cell.get_cell()) # column vectors
+        natom = len(self._cell)
+        lattice = np.linalg.inv(self._cell.cell) # column vectors
         w.write("mesh: [ %5d, %5d, %5d ]\n" % tuple(self._mesh))
         w.write("nqpoint: %-7d\n" % self._qpoints.shape[0])
         w.write("natom:   %-7d\n" % natom)
@@ -116,9 +116,9 @@ class MeshUnfolding(Mesh):
 
     def _set_phonon(self):
         # For the unfolding method.
-        # num_band = self._cell.get_number_of_atoms() * 3
-        cell = self._dynamical_matrix.get_primitive()
-        num_band = cell.get_number_of_atoms() * 3
+        # num_band = len(self._cell) * 3
+        cell = self._dynamical_matrix.primitive
+        num_band = len(cell) * 3
         num_qpoints = len(self._qpoints)
 
         self._eigenvalues = np.zeros((num_qpoints, num_band), dtype='double')

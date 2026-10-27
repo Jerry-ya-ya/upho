@@ -51,7 +51,7 @@ class TestElementWeightsCalculator(unittest.TestCase):
         print(ews_calculator.get_map_elements())
         print(ews_calculator.get_map_atoms_u2p())
 
-        natoms_u = unitcell.get_number_of_atoms()
+        natoms_u = len(unitcell)
         ndims = 3
         nbands = 30
 
@@ -70,8 +70,8 @@ class TestElementWeightsCalculator(unittest.TestCase):
         unitcell, unitcell_ideal, primitive_matrix = self.prepare_L1_2()
         primitive = get_primitive(unitcell_ideal, primitive_matrix)
 
-        natoms_u = unitcell.get_number_of_atoms()
-        natoms_p = primitive.get_number_of_atoms()
+        natoms_u = len(unitcell)
+        natoms_p = len(primitive)
 
         num_elements = 2
         ndims = 3

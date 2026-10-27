@@ -12,8 +12,8 @@ class VectorsAdjuster:
             Disordered supercell.
             Eigenvectors must correspond to the size of the "atoms".
         """
-        self._scaled_positions = atoms.get_scaled_positions()
-        self._masses = atoms.get_masses()
+        self._scaled_positions = atoms.scaled_positions
+        self._masses = atoms.masses
 
     def set_q(self, q):
         """
@@ -73,7 +73,7 @@ class VectorsAdjuster:
             Reduced vectors.
         """
         ndim = 3
-        p2s_map = primitive.get_primitive_to_supercell_map()
+        p2s_map = primitive.p2s_map
         indices = MappingsModifier(p2s_map).expand_mappings(ndim)
         reduced_vectors = vectors[..., indices, :]
 

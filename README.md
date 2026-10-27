@@ -6,28 +6,25 @@ Band unfolding for phonons (http://yuzie007.github.io/upho/)
 
 ## Requirements
 
-- setuptools (installation)
-- numpy
-- h5py
-- scipy
-- spglib
-- matplotlib
-- phonopy==2.14.0
-- seekpath==2.1.0
+- Python 3.13
+- setuptools (build dependency)
+- numpy >= 2.5, < 3
+- h5py >= 3.16, < 4
+- scipy >= 1.18, < 2
+- spglib >= 2.8, < 3
+- matplotlib >= 3.11, < 4
+- phonopy == 2.48.0
+- seekpath >= 2.2.2, < 3
+- PyYAML >= 6, < 7
 
 ## Install
 
-To install the v0.6.6 release directly:
-
-```bash
-pip install git+https://github.com/yuzie007/upho.git@v0.6.6
-```
-
-To work from this checkout, create a virtual environment in the repository root.
+Create a Python 3.13 virtual environment in the repository root, then install
+the project from this checkout.
 On Windows PowerShell:
 
 ```powershell
-py -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e .
 ```
@@ -35,7 +32,7 @@ python -m pip install -e .
 On macOS or Linux:
 
 ```bash
-python3 -m venv .venv
+python3.13 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
 ```
@@ -45,10 +42,17 @@ The editable install reads the dependencies from `setup.py` and installs this pr
 It also exposes the `upho_weights`, `upho_sf`, `upho_qpoints`, `upho_fit`, and
 `upho_plot` commands.
 
+On Windows PowerShell, invoke these extensionless scripts through Python.
+For example, from `examples/01.A1_Cu0.75Au0.25`:
+
+```powershell
+python ..\..\scripts\upho_weights band.conf
+```
+
 Run `deactivate` when you are done.
 
-The project's CI tests Python 3.7 with Phonopy 2.7.0 and 2.14.0;
-other combinations have not been verified here.
+The project's CI tests Python 3.13 with Phonopy 2.48.0. Older releases of this
+project may require a different Python and Phonopy combination.
 
 Once you have installed the tools that we require, you can test by using these commands if those tools we have successfully installed.
 

@@ -8,7 +8,7 @@ class TotalDosUnfolding(TotalDos):
             self,
             mesh_object,
             sigma=sigma,
-            tetrahedron_method=tetrahedron_method)
+            use_tetrahedron_method=tetrahedron_method)
         self._pr_weights = mesh_object.get_pr_weights()
 
     def _get_density_of_states_at_freq(self, f):
