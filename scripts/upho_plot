@@ -1,9 +1,19 @@
 #!/usr/bin/env python
 import argparse
+import warnings
+from itertools import groupby
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize, PowerNorm
 import numpy as np
+from scipy.signal import find_peaks
+
+from upho.cui.settings import parse_phonopy_conf
+
+
+DEFAULT_GAMMA = 0.35
+DEFAULT_RIDGE_PROMINENCE = 0.005
 
 
 def parse_arguments():
@@ -29,7 +39,8 @@ def parse_arguments():
         "--output",
         type=Path,
         default=Path("sf.svg"),
-        help="Output image path (default: sf.svg).",
+        help="Linear plot path, also used to name the _gamma and _ridges plots"
+             " (default: sf.svg).",
     )
     parser.add_argument(
         "--title",
@@ -41,7 +52,31 @@ def parse_arguments():
         default="magma",
         help="Matplotlib color map (default: magma).",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--structure-ideal",
+        type=Path,
+        help="Ideal structure for BAND = AUTO (default: POSCAR_ideal next to band.conf).",
+    )
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=DEFAULT_GAMMA,
+        help="Color scaling exponent for the _gamma plot. Values below 1 brighten"
+             " weak intensities (default: %(default)s).",
+    )
+    parser.add_argument(
+        "--ridge-prominence",
+        type=float,
+        default=DEFAULT_RIDGE_PROMINENCE,
+        help="Minimum peak prominence as a fraction of each q-point's channel"
+             " intensity range (default: %(default)s).",
+    )
+    args = parser.parse_args()
+    if not np.isfinite(args.gamma) or args.gamma <= 0:
+        parser.error("--gamma must be finite and greater than zero")
+    if not 0 <= args.ridge_prominence <= 1:
+        parser.error("--ridge-prominence must be between zero and one")
+    return args
 
 
 def read_metadata(filename):
@@ -57,76 +92,150 @@ def read_metadata(filename):
     return metadata
 
 
-def read_band_labels(filename):
-    """Return high-symmetry point labels from BAND_LABELS, when available."""
-    if not filename.exists():
-        return []
-
-    with filename.open(encoding="utf-8") as stream:
-        for line in stream:
-            key, separator, value = line.partition("=")
-            if separator and key.strip().upper() == "BAND_LABELS":
-                return [format_band_label(label) for label in value.split()]
-    return []
-
-
 def format_band_label(label):
     r"""Convert labels such as \Gamma into Matplotlib math text."""
+    if label.upper() == "GAMMA":
+        return r"$\Gamma$"
     if label.startswith("\\"):
         return "${}$".format(label)
     return label
 
 
-def add_band_ticks(ax, path_distances, labels):
-    """Add labels and separators at repeated band-segment endpoints."""
-    repeated = np.flatnonzero(np.isclose(np.diff(path_distances), 0.0))
-    tick_positions = [path_distances[0]]
-    tick_positions.extend(path_distances[index] for index in repeated)
-    tick_positions.append(path_distances[-1])
+def merge_band_labels(labels, connections):
+    """Join the two endpoint labels at any discontinuity in the q path."""
+    ticks = [labels[0]]
+    index = 1
+    for connected in connections[:-1]:
+        label = labels[index]
+        index += 1
+        if not connected:
+            next_label = labels[index]
+            if label != next_label:
+                label = f"{label} | {next_label}"
+            index += 1
+        ticks.append(label)
+    ticks.append(labels[-1])
+    return ticks
 
-    if len(labels) != len(tick_positions):
-        return
 
-    ax.set_xticks(tick_positions)
-    ax.set_xticklabels(labels)
-    for position in tick_positions[1:-1]:
-        ax.axvline(position, color="white", linewidth=0.8, alpha=0.65)
+def read_auto_band_labels(settings, structure_file, distances):
+    from phonopy.interface.calculator import read_crystal_structure
+    from phonopy.phonon.band_structure import get_band_qpoints_by_seekpath
+    from phonopy.structure.cells import get_primitive, guess_primitive_matrix
 
+    if not structure_file.is_file():
+        warnings.warn(f"BAND = AUTO requires an ideal structure for labels: {structure_file}")
+        return []
 
-def plot_spectral_function(data_file, band_config, output_file, title, cmap):
-    distances, frequencies, spectral_functions = np.loadtxt(
-        data_file, usecols=(0, 1, 2), unpack=True
+    cell, _ = read_crystal_structure(str(structure_file))
+    matrix = settings.get("primitive_matrix")
+    if settings.get("is_primitive_auto"):
+        matrix = guess_primitive_matrix(cell)
+    primitive = cell if matrix is None else get_primitive(cell, matrix)
+    bands, labels, connections = get_band_qpoints_by_seekpath(
+        primitive, settings.get("band_points", 51)
     )
-    frequency_count = len(np.unique(frequencies))
-    distances = distances.reshape((-1, frequency_count))
-    frequencies = frequencies.reshape((-1, frequency_count))
-    spectral_functions = spectral_functions.reshape((-1, frequency_count))
+    reciprocal = np.linalg.inv(primitive.cell).T
+    band_steps = [
+        np.r_[0.0, np.linalg.norm(np.diff(band, axis=0) @ reciprocal, axis=1)]
+        for band in bands
+    ]
+    expected = np.cumsum(np.concatenate(band_steps))
+    if expected.shape != distances.shape or not np.allclose(
+        expected, distances, rtol=0, atol=1e-6
+    ):
+        warnings.warn("The automatic band path does not match the spectral data distances.")
+        return []
+    return merge_band_labels(labels, connections)
 
-    metadata = read_metadata(data_file)
+
+def read_band_ticks(band_config, structure_file, distances):
+    if not band_config.is_file() or len(distances) < 2:
+        return [], []
+
+    settings = parse_phonopy_conf(band_config)
+    boundaries = np.flatnonzero(np.diff(distances) == 0)
+    positions = distances[np.r_[0, boundaries, len(distances) - 1]]
+    if settings.get("band_labels"):
+        labels = [format_band_label(label) for label in settings["band_labels"].split()]
+        # Manual paths can name each endpoint on both sides of a comma.
+        if not settings.get("is_band_auto") and len(labels) != len(positions):
+            paths = settings.get("band_paths", [])
+            if paths and len(labels) == sum(map(len, paths)):
+                connections = []
+                for path in paths:
+                    connections.extend([True] * (len(path) - 2))
+                    connections.append(False)
+                labels = merge_band_labels(labels, connections)
+    elif settings.get("is_band_auto"):
+        structure_file = structure_file or band_config.with_name("POSCAR_ideal")
+        labels = read_auto_band_labels(settings, structure_file, distances)
+    else:
+        labels = []
+
+    if labels and len(labels) != len(positions):
+        warnings.warn("The number of band labels does not match the spectral data endpoints.")
+        labels = []
+    return positions, labels
+
+
+def read_spectral_data(data_file):
+    """Read q-point blocks, whose number of symmetry columns can vary."""
+    with data_file.open(encoding="utf-8") as stream:
+        lines_by_type = groupby(
+            stream, lambda line: bool(line.strip()) and not line.lstrip().startswith("#")
+        )
+        for has_data, lines in lines_by_type:
+            if has_data:
+                block = np.loadtxt(lines, ndmin=2)
+                frequency_count = np.unique(block[:, 1]).size
+                yield from block.reshape(-1, frequency_count, block.shape[1])
+
+
+def find_ridges(block, relative_prominence):
+    """Sample frequency-local spectral maxima at one q point."""
+    indices = np.zeros(len(block), dtype=bool)
+    for profile in block[:, 2:].T:
+        # UPHO rounds intensities to six decimal places in the text output.
+        prominence = max(2e-6, relative_prominence * np.ptp(profile))
+        peaks, _ = find_peaks(profile, prominence=prominence)
+        indices[peaks] = True
+    return block[indices, :2]
+
+
+def decorate_axes(ax, data, band_ticks, title, guide_color):
+    distances, frequencies = data[..., 0], data[..., 1]
+    positions, labels = band_ticks
+
+    ax.set_title(title, pad=12)
+    ax.set_xlabel(r"Wave-vector path distance ($\mathrm{\AA}^{-1}$)")
+    ax.set_ylabel("Frequency (THz)")
+    ax.set_xlim(float(distances.min()), float(distances.max()))
+    ax.set_ylim(float(frequencies.min()), float(frequencies.max()))
+    ax.axhline(0.0, color=guide_color, linestyle="--", linewidth=0.8, alpha=0.65)
+    if labels:
+        symmetry_axis = ax.secondary_xaxis("top")
+        symmetry_axis.set_xticks(positions, labels)
+    for position in positions[1:-1]:
+        ax.axvline(position, color=guide_color, linewidth=0.8, alpha=0.55)
+
+
+def plot_spectral_map(data, band_ticks, output_file, title, cmap, norm, metadata):
     is_squared = metadata.get("is_squared", "false").lower() == "true"
     density_unit = r"THz$^{-2}$" if is_squared else r"THz$^{-1}$"
     sigma_unit = r"THz$^2$" if is_squared else "THz"
 
     fig, ax = plt.subplots(figsize=(7.2, 5.0), constrained_layout=True)
     mesh = ax.pcolormesh(
-        distances,
-        frequencies,
-        spectral_functions,
-        cmap=cmap,
-        shading="auto",
-        vmin=0.0,
-        rasterized=True,
+        data[..., 0], data[..., 1], data[..., 2], cmap=cmap, norm=norm,
+        shading="auto", rasterized=True,
     )
     colorbar = fig.colorbar(mesh, ax=ax, pad=0.02)
-    colorbar.set_label("Spectral function ({})".format(density_unit))
-
-    ax.set_title(title)
-    ax.set_xlabel(r"Wave-vector path distance ($\mathrm{\AA}^{-1}$)")
-    ax.set_ylabel("Frequency (THz)")
-    ax.set_xlim(float(distances.min()), float(distances.max()))
-    ax.set_ylim(float(frequencies.min()), float(frequencies.max()))
-    ax.axhline(0.0, color="white", linestyle="--", linewidth=0.8, alpha=0.65)
-    add_band_ticks(ax, distances[:, 0], read_band_labels(band_config))
+    colorbar.set_label(f"Spectral function ({density_unit})")
+    if isinstance(norm, PowerNorm):
+        tick_values = norm.inverse(np.linspace(0, 1, 6))
+        colorbar.set_ticks(tick_values, labels=[f"{value:.3g}" for value in tick_values])
+    decorate_axes(ax, data, band_ticks, title, "white")
 
     function = metadata.get("function", "").capitalize()
     sigma = metadata.get("sigma")
@@ -147,6 +256,41 @@ def plot_spectral_function(data_file, band_config, output_file, title, cmap):
     plt.close(fig)
 
 
+def plot_spectral_function(
+    data_file, band_config, output_file, title, cmap,
+    gamma=DEFAULT_GAMMA, ridge_prominence=DEFAULT_RIDGE_PROMINENCE, structure_file=None,
+):
+    totals = []
+    ridges = []
+    for block in read_spectral_data(data_file):
+        totals.append(block[:, :3].copy())
+        ridges.append(find_ridges(block, ridge_prominence))
+    if not totals:
+        raise ValueError(f"No spectral data found in {data_file}")
+
+    data = np.stack(totals)
+    band_ticks = read_band_ticks(band_config, structure_file, data[:, 0, 0])
+    metadata = read_metadata(data_file)
+    vmax = max(0.0, float(data[..., 2].max())) or 1.0
+    gamma_file = output_file.with_stem(f"{output_file.stem}_gamma")
+    ridge_file = output_file.with_stem(f"{output_file.stem}_ridges")
+
+    plot_spectral_map(
+        data, band_ticks, output_file, title, cmap, Normalize(vmin=0, vmax=vmax), metadata,
+    )
+    plot_spectral_map(
+        data, band_ticks, gamma_file, f"{title} ($\\gamma$ = {gamma:g})", cmap,
+        PowerNorm(gamma, vmin=0, vmax=vmax), metadata,
+    )
+
+    fig, ax = plt.subplots(figsize=(7.2, 5.0), constrained_layout=True)
+    ridge_distances, ridge_frequencies = np.vstack(ridges).T
+    ax.scatter(ridge_distances, ridge_frequencies, s=2.5, color="#184c6a", linewidths=0)
+    decorate_axes(ax, data, band_ticks, f"{title} ridges", "0.65")
+    fig.savefig(ridge_file, dpi=200)
+    plt.close(fig)
+
+
 def main():
     args = parse_arguments()
     plot_spectral_function(
@@ -155,6 +299,9 @@ def main():
         args.output,
         args.title,
         args.cmap,
+        gamma=args.gamma,
+        ridge_prominence=args.ridge_prominence,
+        structure_file=args.structure_ideal,
     )
 
 

@@ -97,8 +97,17 @@ Here we consider a bit more practical case when Cu<sub>0.75</sub>Au<sub>0.25</su
     upho_plot
     ```
 
-    This reads `sf_SR.dat` and `band.conf`, then writes `sf.svg`. Run
-    `upho_plot --help` to see options for changing the files, title, or color map.
-    Hopefully you get the figure like below:
+    This reads `sf_SR.dat` and `band.conf`. With `BAND = AUTO`, `POSCAR_ideal`
+    supplies the structure for the high-symmetry labels above each plot.
+    The numeric path distance in Å⁻¹ appears below each plot.
+
+    - `sf.svg` uses a linear intensity scale.
+    - `sf_gamma.svg` enhances weak intensities. Use `--gamma` to adjust the
+      exponent from its default of `0.35`.
+    - `sf_ridges.svg` marks local frequency peaks at each q point using the
+      total spectrum and the symmetry-resolved channels. Lower
+      `--ridge-prominence` from its default of `0.005` to include weaker peaks.
+
+    The original plot is shown below.
 
     ![](sf.orig.svg)

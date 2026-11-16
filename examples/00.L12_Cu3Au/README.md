@@ -108,8 +108,16 @@ Here we consider the hypothetical case when Cu<sub>3</sub>Au with the L1<sub>2</
     upho_plot
     ```
 
-    This reads `sf_SR.dat` and `band.conf`, then writes `sf.svg`. Run
-    `upho_plot --help` to see options for changing the files, title, or color map.
-    Hopefully you get the figure like below:
+    This reads `sf_SR.dat` and `band.conf`. All three plots show the numeric
+    path distance in Å⁻¹ below the plot and the `BAND_LABELS` above it.
+
+    - `sf.svg` uses a linear intensity scale.
+    - `sf_gamma.svg` enhances weak intensities. Use `--gamma` to adjust the
+      exponent from its default of `0.35`.
+    - `sf_ridges.svg` marks local frequency peaks at each q point using the
+      total spectrum and the symmetry-resolved channels. Lower
+      `--ridge-prominence` from its default of `0.005` to include weaker peaks.
+
+    The original plot is shown below.
 
     ![](sf.orig.svg)

@@ -9,3 +9,5 @@
 ## 2026/10/27
 
 - Add pinned SeeK-path support across packaging, Docker, and documentation, align documented dependencies, and ignore generated outputs from the second example.
+
+- Upgrade UPHO to Python 3.13 and modern scientific dependencies, migrate Phonopy, NumPy, and spglib APIs and safe config parsing, and refresh Docker, CI, documentation, and regression tests.
