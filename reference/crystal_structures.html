@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Common Metallic Crystal Structures — Geometric 3D Viewer</title>
+<style>
+:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#202935;background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px 28px 30px}h1{font-size:clamp(23px,3vw,35px);margin:0 0 8px;font-weight:750}p{margin:0;color:#617080;font-size:13px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.controls{display:flex;flex-wrap:wrap;align-items:center;gap:9px}button{border:1px solid #d5dee8;border-radius:8px;padding:9px 12px;background:#fff;color:#27384b;font-weight:650;cursor:pointer}button:hover{background:#f4f7fa}.main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:25px auto 14px;max-width:1500px}.panel{border:1px solid #e4e8ee;border-radius:15px;overflow:hidden;background:#fff;min-width:0}.panel:focus-within{outline:2px solid #b8d2ed}.drawing{display:block;width:100%;height:auto;touch-action:none;cursor:grab}.drawing:active{cursor:grabbing}.meta{text-align:center;padding:3px 8px 17px}.meta h2{font-size:clamp(15px,1.5vw,20px);margin:0 0 5px}.meta p{line-height:1.45}.note{font-size:13px;max-width:1500px;margin:0 auto;line-height:1.7;color:#586574}.legend{display:flex;gap:20px;justify-content:center;align-items:center;flex-wrap:wrap;margin:16px 0}.legend span{font-size:12px;color:#586574;display:inline-flex;align-items:center;gap:7px}.swatch{display:inline-block;width:19px;height:0;border-top:2px solid #4c596b}.swatch.dash{border-top-style:dashed}.swatch.atom{width:13px;height:13px;border:1px solid #6080a0;border-radius:50%;background:#76a7d9}.subtle{font-size:12px} @media(max-width:800px){body{padding:16px}.main{grid-template-columns:1fr}.drawing{max-height:500px}}
+.swatch.neighbor{border-color:#008080}
+</style>
+</head>
+<body>
+<div class="top"><div><h1>Common Metallic Crystal Structures</h1><p>Geometry-based 3D crystal diagrams · BCC / FCC / HCP</p></div><div class="controls"><button id="reset">Reset rotation</button><button id="png">Export PNG (3 panels)</button><button id="svg">Export SVG (vector)</button></div></div>
+<div class="main" id="cards"></div>
+<div class="legend"><span><i class="swatch"></i> Unit-cell edge</span><span><i class="swatch neighbor"></i> Nearest-neighbor connection</span><span><i class="swatch dash"></i> Rear line</span><span><i class="swatch atom"></i> Atom position</span></div>
+<p class="note">Drag to rotate or scroll to zoom. Teal lines link nearest neighbors shown within each unit cell. In BCC, the body center connects to all eight corners. The HCP prism includes a center atom in each outer A layer and three atoms in the middle B layer.</p>
+<script>
+'use strict';
+const W=520,H=480;
+const vec=(x,y,z)=>[x,y,z];
+const fccCorners=(()=>{let a=[];for(let x of [-.5,.5])for(let y of [-.5,.5])for(let z of [-.5,.5])a.push([x,y,z]);return a})();
+const cubeEdges=(()=>{let e=[];for(let i=0;i<8;i++)for(let j=i+1;j<8;j++){let d=0;for(let k=0;k<3;k++)if(Math.abs(fccCorners[i][k]-fccCorners[j][k])>.1)d++;if(d===1)e.push([i,j]);}return e})();
+const fccFaceCenters=[[.5,0,0],[-.5,0,0],[0,.5,0],[0,-.5,0],[0,0,.5],[0,0,-.5]];
+// Hexagonal prism (flat-top view in Cartesian coordinates): two A layers, middle B layer.
+// The B points are the centers of three alternating triangles formed by the A-layer triangular lattice.
+const R=.62,ht=R*Math.sqrt(2/3); // Half the ideal HCP height, c/a = sqrt(8/3).
+const hexRing=(z)=>Array.from({length:6},(_,i)=>[R*Math.cos(i*Math.PI/3),R*Math.sin(i*Math.PI/3),z]);
+const topRing=hexRing(ht),bottomRing=hexRing(-ht);
+// Three sites in the middle layer of the 6-atom conventional hexagonal prism visualization.
+const mid=[[R/2, R*Math.sqrt(3)/6,0],[-R/2,R*Math.sqrt(3)/6,0],[0,-R*Math.sqrt(3)/3,0]];
+const hcpAtoms=[...topRing,...bottomRing,[0,0,ht],[0,0,-ht],...mid];
+const hcpEdges=[];for(let i=0;i<6;i++){hcpEdges.push([i,(i+1)%6],[6+i,6+(i+1)%6],[i,6+i])}
+const models=[
+ {key:'bcc',name:'Body-Centered Cubic (BCC)',desc:'8 corners + 1 body center · CN = 8',atoms:[...fccCorners,[0,0,0]],edges:cubeEdges,fill:'#6197d0',dark:'#245b99',scale:245},
+ {key:'fcc',name:'Face-Centered Cubic (FCC)',desc:'8 corners + 6 face centers · CN = 12',atoms:[...fccCorners,...fccFaceCenters],edges:cubeEdges,fill:'#9b82d3',dark:'#66449f',scale:245},
+ {key:'hcp',name:'Hexagonal Close-Packed (HCP)',desc:'ABAB stacking · CN = 12',atoms:hcpAtoms,edges:hcpEdges,fill:'#71ba9e',dark:'#277a60',scale:220}
+];
+
+function nearestNeighborPairs(atoms) {
+  const pairs = [];
+  let shortest = Infinity;
+  for (let i = 0; i < atoms.length; i++) {
+    const [x, y, z] = atoms[i];
+    for (let j = i + 1; j < atoms.length; j++) {
+      const [u, v, w] = atoms[j];
+      const distance = Math.hypot(x - u, y - v, z - w);
+      pairs.push({i, j, distance});
+      shortest = Math.min(shortest, distance);
+    }
+  }
+  return pairs.filter(pair => Math.abs(pair.distance - shortest) < 1e-6)
+    .map(({i, j}) => [i, j]);
+}
+
+for (const model of models) {
+  model.neighbors = nearestNeighborPairs(model.atoms);
+}
+
+let views=[];
+function rot(p,yaw,pitch){const [x,y,z]=p;let xx=x*Math.cos(yaw)+z*Math.sin(yaw),zz=-x*Math.sin(yaw)+z*Math.cos(yaw);return [xx,y*Math.cos(pitch)-zz*Math.sin(pitch),y*Math.sin(pitch)+zz*Math.cos(pitch)];}
+function project(p,v){const [x,y,z]=rot(p,v.yaw,v.pitch);const persp=4.4/(4.4-z);return {x:W/2+x*v.scale*persp,y:H/2-y*v.scale*persp,z};}
+function rgb(hex){let n=parseInt(hex.slice(1),16);return [(n>>16)&255,(n>>8)&255,n&255];}
+function colorBlend(hex,f){let [r,g,b]=rgb(hex);const fn=n=>Math.round(Math.max(0,Math.min(255,n)));return `rgb(${fn(r+(255-r)*f)},${fn(g+(255-g)*f)},${fn(b+(255-b)*f)})`}
+function strokeLine(ctx, {a, b, back, color, width}) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.lineWidth = width;
+  ctx.strokeStyle = color;
+  ctx.setLineDash(back ? [7, 7] : []);
+  ctx.stroke();
+  ctx.restore();
+}
+function atom(ctx,p,m){let radius=Math.max(11,18*(4.4/(4.4-p.z)));let grad=ctx.createRadialGradient(p.x-radius*.36,p.y-radius*.43,1,p.x,p.y,radius);grad.addColorStop(0,colorBlend(m.fill,.88));grad.addColorStop(.34,colorBlend(m.fill,.43));grad.addColorStop(1,m.dark);ctx.fillStyle=grad;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,2*Math.PI);ctx.fill();ctx.strokeStyle=m.dark;ctx.lineWidth=1.15;ctx.stroke()}
+function getGeometry(model, view) {
+  const pts = model.atoms.map(point => project(point, view));
+  const segment = ([i, j], colors, widths) => {
+    const a = pts[i], b = pts[j];
+    const back = (a.z + b.z) / 2 < -.13;
+    const side = back ? 0 : 1;
+    return {a, b, back, color: colors[side], width: widths[side]};
+  };
+  // Paint rear lines first. Where HCP neighbors share an edge, the teal line sits on top.
+  const lines = [
+    ...model.edges.map(pair => segment(pair, ['#aab3bf', '#45505c'], [1.8, 2.5])),
+    ...model.neighbors.map(pair => segment(pair, ['#65a5a5', '#008080'], [1.6, 2])),
+  ].sort((a, b) => Number(b.back) - Number(a.back));
+  pts.sort((a, b) => a.z - b.z);
+  return {pts, lines};
+}
+function render(v){const ctx=v.canvas.getContext('2d');const m=v.model;ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);const {pts,lines}=getGeometry(m,v);
+for (const line of lines) strokeLine(ctx, line);
+for (const point of pts) atom(ctx, point, m);
+}
+function init(){const root=document.getElementById('cards');for(let m of models){let panel=document.createElement('section');panel.className='panel';let c=document.createElement('canvas');c.className='drawing';c.width=W;c.height=H;c.setAttribute('aria-label',m.name+' 3D crystal lattice');c.setAttribute('role','img');let label=document.createElement('div');label.className='meta';label.innerHTML='<h2>'+m.name+'</h2><p>'+m.desc+'</p>';panel.append(c,label);root.append(panel);let v={model:m,canvas:c,yaw:-.64,pitch:.43,scale:m.scale};views.push(v);
+let dragging=false,lastX=0,lastY=0;c.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!dragging)return;v.yaw+=(e.clientX-lastX)*.012;v.pitch=Math.max(-1.43,Math.min(1.43,v.pitch+(e.clientY-lastY)*.012));lastX=e.clientX;lastY=e.clientY;render(v)});c.addEventListener('pointerup',()=>dragging=false);c.addEventListener('pointercancel',()=>dragging=false);c.addEventListener('wheel',e=>{e.preventDefault();v.scale=Math.max(125,Math.min(350,v.scale*(e.deltaY>0?.94:1.06)));render(v)},{passive:false});render(v)} }
+document.getElementById('reset').onclick=()=>{views.forEach(v=>{v.yaw=-.64;v.pitch=.43;v.scale=v.model.scale;render(v)})};
+function label(ctx,x,y,title,desc){ctx.textAlign='center';ctx.fillStyle='#1f2937';ctx.font='bold 23px Arial';ctx.fillText(title,x,y);ctx.fillStyle='#697688';ctx.font='17px Arial';ctx.fillText(desc,x,y+29)}
+function exportPng(){const gap=26,pad=35,top=112,bottom=118;const c=document.createElement('canvas');c.width=W*3+gap*2+pad*2;c.height=top+H+bottom;let ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#202935';ctx.font='bold 37px Arial';ctx.textAlign='left';ctx.fillText('Common Metallic Crystal Structures',pad,65);views.forEach((v,i)=>{let x=pad+i*(W+gap);ctx.drawImage(v.canvas,x,top);label(ctx,x+W/2,top+H+35,v.model.name,v.model.desc)});let a=document.createElement('a');a.download='crystal_structures.png';a.href=c.toDataURL('image/png');a.click()}
+document.getElementById('png').onclick=exportPng;
+// Generate fully independent, editable vector geometry with flat atom fills.
+function exportSvg() {
+  const pad = 35, gap = 26, topY = 112, bottom = 118;
+  const totalW = W * 3 + gap * 2 + pad * 2, totalH = topY + H + bottom;
+  const esc = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const parts = [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}">`,
+    '<rect width="100%" height="100%" fill="#fff"/>',
+    '<text x="35" y="65" font-family="Arial" font-weight="700" font-size="37" fill="#202935">Common Metallic Crystal Structures</text>',
+  ];
+  views.forEach((view, index) => {
+    const x = pad + index * (W + gap);
+    const model = view.model;
+    const {pts, lines} = getGeometry(model, view);
+    parts.push(`<g transform="translate(${x},${topY})">`);
+    for (const {a, b, back, color, width} of lines) {
+      const dash = back ? ' stroke-dasharray="7 7"' : '';
+      parts.push(`<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="${width}"${dash}/>`);
+    }
+    for (const point of pts) {
+      const radius = Math.max(11, 18 * (4.4 / (4.4 - point.z)));
+      parts.push(`<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="${model.fill}" stroke="${model.dark}" stroke-width="1.2"/>`);
+    }
+    parts.push('</g>');
+    parts.push(`<text x="${x + W/2}" y="${topY + H + 35}" font-family="Arial" font-size="23" text-anchor="middle" font-weight="bold" fill="#202935">${esc(model.name)}</text>`);
+    parts.push(`<text x="${x + W/2}" y="${topY + H + 64}" font-family="Arial" font-size="17" text-anchor="middle" fill="#697688">${esc(model.desc)}</text>`);
+  });
+  parts.push('</svg>');
+  const blob = new Blob([parts.join('\n')], {type: 'image/svg+xml'});
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = 'crystal_structures.svg';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+document.getElementById('svg').onclick=exportSvg;
+init();
+</script>
+</body></html>

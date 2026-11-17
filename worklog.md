@@ -11,3 +11,7 @@
 - Add pinned SeeK-path support across packaging, Docker, and documentation, align documented dependencies, and ignore generated outputs from the second example.
 
 - Upgrade UPHO to Python 3.13 and modern scientific dependencies, migrate Phonopy, NumPy, and spglib APIs and safe config parsing, and refresh Docker, CI, documentation, and regression tests.
+
+## 2026/11/16
+
+- Show numeric path distances alongside manual or automatic high-symmetry labels in upho_plot and add configurable gamma-enhanced and phonon ridge plots with documented, Git-ignored example outputs.

@@ -100,6 +100,8 @@ Here we consider a bit more practical case when Cu<sub>0.75</sub>Au<sub>0.25</su
     This reads `sf_SR.dat` and `band.conf`. With `BAND = AUTO`, `POSCAR_ideal`
     supplies the structure for the high-symmetry labels above each plot.
     The numeric path distance in Å⁻¹ appears below each plot.
+    The footer shows the atomic composition calculated from `POSCAR`. Use
+    `--structure` to supply a different structure file.
 
     - `sf.svg` uses a linear intensity scale.
     - `sf_gamma.svg` enhances weak intensities. Use `--gamma` to adjust the
@@ -107,6 +109,9 @@ Here we consider a bit more practical case when Cu<sub>0.75</sub>Au<sub>0.25</su
     - `sf_ridges.svg` marks local frequency peaks at each q point using the
       total spectrum and the symmetry-resolved channels. Lower
       `--ridge-prominence` from its default of `0.005` to include weaker peaks.
+
+    Every SVG in the output directory is also rendered as a PNG in its `png/`
+    subdirectory, including the reference SVG below.
 
     The original plot is shown below.
 

@@ -13,6 +13,7 @@ Band unfolding for phonons (http://yuzie007.github.io/upho/)
 - scipy >= 1.18, < 2
 - spglib >= 2.8, < 3
 - matplotlib >= 3.11, < 4
+- resvg_py >= 0.5, < 0.6
 - phonopy == 2.48.0
 - seekpath >= 2.2.2, < 3
 - PyYAML >= 6, < 7

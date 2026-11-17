@@ -110,6 +110,8 @@ Here we consider the hypothetical case when Cu<sub>3</sub>Au with the L1<sub>2</
 
     This reads `sf_SR.dat` and `band.conf`. All three plots show the numeric
     path distance in Å⁻¹ below the plot and the `BAND_LABELS` above it.
+    The footer shows the atomic composition calculated from `POSCAR`. Use
+    `--structure` to supply a different structure file.
 
     - `sf.svg` uses a linear intensity scale.
     - `sf_gamma.svg` enhances weak intensities. Use `--gamma` to adjust the
@@ -117,6 +119,9 @@ Here we consider the hypothetical case when Cu<sub>3</sub>Au with the L1<sub>2</
     - `sf_ridges.svg` marks local frequency peaks at each q point using the
       total spectrum and the symmetry-resolved channels. Lower
       `--ridge-prominence` from its default of `0.005` to include weaker peaks.
+
+    Every SVG in the output directory is also rendered as a PNG in its `png/`
+    subdirectory, including the reference SVG below.
 
     The original plot is shown below.
 

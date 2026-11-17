@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 import argparse
 import warnings
+from collections import Counter
 from itertools import groupby
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize, PowerNorm
 import numpy as np
+from phonopy.interface.calculator import read_crystal_structure
+from resvg_py import svg_to_bytes
 from scipy.signal import find_peaks
 
 from upho.cui.settings import parse_phonopy_conf
@@ -14,11 +17,12 @@ from upho.cui.settings import parse_phonopy_conf
 
 DEFAULT_GAMMA = 0.35
 DEFAULT_RIDGE_PROMINENCE = 0.005
+PLOT_DPI = 200
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Plot a phonon spectral function from an sf_*.dat file."
+        description="Plot a phonon spectral function and export the SVGs to a png/ folder."
     )
     parser.add_argument(
         "-i",
@@ -51,6 +55,12 @@ def parse_arguments():
         "--cmap",
         default="magma",
         help="Matplotlib color map (default: magma).",
+    )
+    parser.add_argument(
+        "--structure",
+        type=Path,
+        help="Actual atomic structure for the composition label"
+             " (default: POSCAR next to the input data).",
     )
     parser.add_argument(
         "--structure-ideal",
@@ -92,6 +102,25 @@ def read_metadata(filename):
     return metadata
 
 
+def read_composition(data_file, structure_file):
+    if structure_file is None:
+        structure_file = data_file.with_name("POSCAR")
+        if not structure_file.is_file():
+            warnings.warn(f"No POSCAR found for the composition label: {structure_file}")
+            return ""
+    elif not structure_file.is_file():
+        raise FileNotFoundError(f"Composition structure file not found: {structure_file}")
+
+    cell, _ = read_crystal_structure(str(structure_file))
+    if cell is None or not len(cell):
+        raise ValueError(f"No atoms found in composition structure: {structure_file}")
+    counts = Counter(cell.symbols)
+    fractions = ", ".join(
+        f"{symbol} {100 * count / len(cell):.4g}%" for symbol, count in counts.items()
+    )
+    return f"Atomic composition: {fractions}"
+
+
 def format_band_label(label):
     r"""Convert labels such as \Gamma into Matplotlib math text."""
     if label.upper() == "GAMMA":
@@ -119,7 +148,6 @@ def merge_band_labels(labels, connections):
 
 
 def read_auto_band_labels(settings, structure_file, distances):
-    from phonopy.interface.calculator import read_crystal_structure
     from phonopy.phonon.band_structure import get_band_qpoints_by_seekpath
     from phonopy.structure.cells import get_primitive, guess_primitive_matrix
 
@@ -220,7 +248,34 @@ def decorate_axes(ax, data, band_ticks, title, guide_color):
         ax.axvline(position, color=guide_color, linewidth=0.8, alpha=0.55)
 
 
-def plot_spectral_map(data, band_ticks, output_file, title, cmap, norm, metadata):
+def save_plot(fig, output_file, composition):
+    if composition:
+        fig.supxlabel(composition, fontsize=9, color="0.25")
+    try:
+        fig.savefig(output_file, dpi=PLOT_DPI)
+    finally:
+        plt.close(fig)
+
+
+def export_svg_batch(directory):
+    """Render SVG files beside the plots into a sibling png/ folder."""
+    svg_files = sorted(
+        path for path in directory.iterdir() if path.is_file() and path.suffix.lower() == ".svg"
+    )
+    if not svg_files:
+        return
+
+    png_directory = directory / "png"
+    png_directory.mkdir(exist_ok=True)
+    for svg_file in svg_files:
+        png_file = png_directory / svg_file.with_suffix(".png").name
+        png_data = svg_to_bytes(
+            svg_path=str(svg_file), resources_dir=str(directory), dpi=PLOT_DPI,
+        )
+        png_file.write_bytes(png_data)
+
+
+def plot_spectral_map(data, band_ticks, output_file, title, cmap, norm, metadata, composition):
     is_squared = metadata.get("is_squared", "false").lower() == "true"
     density_unit = r"THz$^{-2}$" if is_squared else r"THz$^{-1}$"
     sigma_unit = r"THz$^2$" if is_squared else "THz"
@@ -252,13 +307,13 @@ def plot_spectral_map(data, band_ticks, output_file, title, cmap, norm, metadata
             bbox={"facecolor": "black", "edgecolor": "none", "alpha": 0.45},
         )
 
-    fig.savefig(output_file, dpi=200)
-    plt.close(fig)
+    save_plot(fig, output_file, composition)
 
 
 def plot_spectral_function(
     data_file, band_config, output_file, title, cmap,
     gamma=DEFAULT_GAMMA, ridge_prominence=DEFAULT_RIDGE_PROMINENCE, structure_file=None,
+    composition_structure=None,
 ):
     totals = []
     ridges = []
@@ -271,24 +326,26 @@ def plot_spectral_function(
     data = np.stack(totals)
     band_ticks = read_band_ticks(band_config, structure_file, data[:, 0, 0])
     metadata = read_metadata(data_file)
+    composition = read_composition(data_file, composition_structure)
     vmax = max(0.0, float(data[..., 2].max())) or 1.0
     gamma_file = output_file.with_stem(f"{output_file.stem}_gamma")
     ridge_file = output_file.with_stem(f"{output_file.stem}_ridges")
 
     plot_spectral_map(
         data, band_ticks, output_file, title, cmap, Normalize(vmin=0, vmax=vmax), metadata,
+        composition,
     )
     plot_spectral_map(
         data, band_ticks, gamma_file, f"{title} ($\\gamma$ = {gamma:g})", cmap,
-        PowerNorm(gamma, vmin=0, vmax=vmax), metadata,
+        PowerNorm(gamma, vmin=0, vmax=vmax), metadata, composition,
     )
 
     fig, ax = plt.subplots(figsize=(7.2, 5.0), constrained_layout=True)
     ridge_distances, ridge_frequencies = np.vstack(ridges).T
     ax.scatter(ridge_distances, ridge_frequencies, s=2.5, color="#184c6a", linewidths=0)
     decorate_axes(ax, data, band_ticks, f"{title} ridges", "0.65")
-    fig.savefig(ridge_file, dpi=200)
-    plt.close(fig)
+    save_plot(fig, ridge_file, composition)
+    export_svg_batch(output_file.parent)
 
 
 def main():
@@ -302,6 +359,7 @@ def main():
         gamma=args.gamma,
         ridge_prominence=args.ridge_prominence,
         structure_file=args.structure_ideal,
+        composition_structure=args.structure,
     )
 
 
