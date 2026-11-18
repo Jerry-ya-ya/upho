@@ -15,3 +15,7 @@
 ## 2026/11/16
 
 - Show numeric path distances alongside manual or automatic high-symmetry labels in upho_plot and add configurable gamma-enhanced and phonon ridge plots with documented, Git-ignored example outputs.
+
+## 2026/11/18
+
+- Add composition labels and batch PNG export to upho_plot with dependencies, documentation, and ignore rules, plus interactive crystal and phonon reference pages, an offline LaTeX formula guide, and a crystal diagram.
