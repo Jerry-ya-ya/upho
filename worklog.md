@@ -19,3 +19,5 @@
 ## 2026/11/18
 
 - Add composition labels and batch PNG export to upho_plot with dependencies, documentation, and ignore rules, plus interactive crystal and phonon reference pages, an offline LaTeX formula guide, and a crystal diagram.
+
+- Add a Markdown-driven phonon presentation workflow with editable tables, reference figures, LaTeX formula rendering, documented build scripts, and ignored generated PowerPoint files.

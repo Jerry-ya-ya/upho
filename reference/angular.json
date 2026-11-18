@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "projects": {
+    "reference": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "index": "src/index.html",
+            "tsConfig": "tsconfig.json",
+            "outputPath": "dist",
+            "styles": [
+              "src/styles.css"
+            ],
+            "assets": [
+              {
+                "glob": "*.html",
+                "input": "src",
+                "output": "content",
+                "ignore": [
+                  "index.html"
+                ]
+              },
+              {
+                "glob": "theme.css",
+                "input": "src",
+                "output": "content"
+              }
+            ]
+          }
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "reference:build"
+          }
+        }
+      }
+    }
+  }
+}
