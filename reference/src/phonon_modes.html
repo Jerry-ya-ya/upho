@@ -99,7 +99,7 @@
     }
   </style>
 <link rel="stylesheet" href="theme.css">
-</head>
+<script src="i18n.js"></script></head>
 <body>
   <main>
     <header>
@@ -185,7 +185,8 @@
       </div>
     </section>
   </main>
-  <script>
+  <script type="module">
+await window.i18nReady;
     (() => {
       "use strict";
 

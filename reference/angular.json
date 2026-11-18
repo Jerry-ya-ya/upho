@@ -29,6 +29,16 @@
                 "glob": "theme.css",
                 "input": "src",
                 "output": "content"
+              },
+              {
+                "glob": "*.json",
+                "input": "src/i18n",
+                "output": "content/i18n"
+              },
+              {
+                "glob": "i18n.js",
+                "input": "src",
+                "output": "content"
               }
             ]
           }

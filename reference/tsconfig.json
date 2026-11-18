@@ -9,7 +9,9 @@
     "lib": [
       "ES2022",
       "DOM"
-    ]
+    ],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "angularCompilerOptions": {
     "strictTemplates": true
