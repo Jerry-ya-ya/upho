@@ -1,6 +1,6 @@
 # UPHO Reference
 
-Angular 主頁提供首頁、晶體結構、聲子模態與展開公式導覽。原始互動 HTML 透過同源 iframe 載入，共用 src/theme.css；保留 canvas 動畫、匯出及 LaTeX 複製功能。
+Angular 主頁提供首頁、晶體結構、聲子模態與展開公式導覽。原始互動 HTML 透過同源 iframe 載入，共用 src/modules/theme/theme.css；保留 canvas 動畫、匯出及 LaTeX 複製功能。
 
 ## 本機開發
 
@@ -18,7 +18,29 @@ npm start
 
 `npm run build` 使用 `/upho/` base href，輸出在 dist/browser。導覽採 hash URL，重新整理子頁不需伺服器 rewrite。若更改 repo 名稱，請同步修改 package.json 的 base-href。
 
-內容編輯 src/ 下的三個 HTML，統一樣式在 src/theme.css，網站首頁與導覽在 src/main.ts、src/styles.css。程式碼來源連結指向 GitHub，避免部署後相對路徑失效。
+原始碼結構：
+
+```text
+src/
+  modules/
+    navigation/   # 導覽列：component.ts、HTML、CSS
+    content/      # 內容容器：component.ts、HTML、CSS
+    i18n/         # Angular 語言服務與互動頁面翻譯程式
+    theme/        # 互動頁面共用樣式
+  pages/
+    shell/        # 組合導覽列、內容區與頁尾
+    home/         # 首頁：component.ts、HTML、CSS
+    crystals/     # 晶體結構：HTML、CSS、JS
+    modes/        # 聲子模態：HTML、CSS、JS
+    formulas/     # 展開公式：HTML、CSS、JS
+    pages.ts      # 頁面清單
+  i18n/           # 中英文 JSON 翻譯
+  main.ts         # Angular 啟動入口
+  index.html      # 網站 HTML 入口
+  styles.css      # 全域基礎樣式
+```
+
+每個頁面或顯示元件的 HTML、樣式與互動程式集中在各自資料夾；共用翻譯服務與樣式集中於 modules。部署保留 pages 子目錄，PPT 擷取腳本也已更新來源路徑。程式碼來源連結指向 GitHub。
 
 ## 依賴漏洞狀態（2026-11-18）
 
@@ -27,3 +49,5 @@ npm start
 公告：https://github.com/advisories/GHSA-fc5q-39xc-vjpf
 
 開發伺服器僅綁定 127.0.0.1。建置使用儲存庫內固定 glob，勿將不可信輸入當作 glob 或執行不可信建置設定。GitHub Pages 僅發布 dist/browser 靜態產物，不發布 Node 建置工具。這些措施限制暴露範圍，並未修補 picomatch 本身；待官方提供修補版後更新鎖定檔並重跑 npm audit 與 npm run build。
+
+建置的 JS/CSS 檔名包含內容雜湊，讓新版部署使用新的資源網址。入口 HTML 以 UTF-8 儲存，瀏覽器標題由語言服務同步切換。

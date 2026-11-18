@@ -1,0 +1,2 @@
+export interface ReferencePage {id:string;title:string;number:string;description:string;file:string;}
+export const pages:ReferencePage[]=[{id:'home',title:'首頁',number:'',description:'',file:''},{id:'crystals',title:'晶體結構',number:'01',description:'旋轉 BCC、FCC 與 HCP 模型，觀察最近鄰連接。',file:'pages/crystals/crystals.html'},{id:'modes',title:'聲子模態',number:'02',description:'比較聲學與光學模態的相位、位移與色散。',file:'pages/modes/modes.html'},{id:'formulas',title:'展開公式',number:'03',description:'從動力矩陣到平移投影，理解頻譜與元素分解。',file:'pages/formulas/formulas.html'}];

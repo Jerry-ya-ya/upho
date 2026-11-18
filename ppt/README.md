@@ -54,7 +54,7 @@ node ppt/build_ppt.mjs ppt/phonon_to_physics_learning.md ppt/phonon_to_physics_l
 
 公式排版另需 KaTeX。可用 `KATEX_MODULE` 指定 `katex/dist/katex.mjs` 的完整路徑，或使用已安裝 KaTeX 的 Node 環境。公式圖依手稿中公式頁的順序命名，增刪或調整公式頁順序後也必須重新執行 `render_formulas.mjs`。
 
-HTML 更新後可執行 `node ppt/capture_reference.mjs`，需本機 Edge；可透過 `EDGE_PATH` 指定位置。程式只會開啟獨立無頭瀏覽器讀取本機 HTML。晶體圖如有修改，可用 `reference/src/crystal_structures.html` 的 Export PNG 更新 `crystal_structures.png`。
+HTML 更新後可執行 `node ppt/capture_reference.mjs`，需本機 Edge；可透過 `EDGE_PATH` 指定位置。程式只會開啟獨立無頭瀏覽器讀取本機 HTML。晶體圖如有修改，可用 `reference/src/pages/crystals/crystals.html` 的 Export PNG 更新 `crystal_structures.png`。
 
 ## 內容範圍
 

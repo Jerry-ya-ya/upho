@@ -1,20 +1,3 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Common Metallic Crystal Structures — Geometric 3D Viewer</title>
-<style>
-:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#202935;background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px 28px 30px}h1{font-size:clamp(23px,3vw,35px);margin:0 0 8px;font-weight:750}p{margin:0;color:#617080;font-size:13px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.controls{display:flex;flex-wrap:wrap;align-items:center;gap:9px}button{border:1px solid #d5dee8;border-radius:8px;padding:9px 12px;background:#fff;color:#27384b;font-weight:650;cursor:pointer}button:hover{background:#f4f7fa}.main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:25px auto 14px;max-width:1500px}.panel{border:1px solid #e4e8ee;border-radius:15px;overflow:hidden;background:#fff;min-width:0}.panel:focus-within{outline:2px solid #b8d2ed}.drawing{display:block;width:100%;height:auto;touch-action:none;cursor:grab}.drawing:active{cursor:grabbing}.meta{text-align:center;padding:3px 8px 17px}.meta h2{font-size:clamp(15px,1.5vw,20px);margin:0 0 5px}.meta p{line-height:1.45}.note{font-size:13px;max-width:1500px;margin:0 auto;line-height:1.7;color:#586574}.legend{display:flex;gap:20px;justify-content:center;align-items:center;flex-wrap:wrap;margin:16px 0}.legend span{font-size:12px;color:#586574;display:inline-flex;align-items:center;gap:7px}.swatch{display:inline-block;width:19px;height:0;border-top:2px solid #4c596b}.swatch.dash{border-top-style:dashed}.swatch.atom{width:13px;height:13px;border:1px solid #6080a0;border-radius:50%;background:#76a7d9}.subtle{font-size:12px} @media(max-width:800px){body{padding:16px}.main{grid-template-columns:1fr}.drawing{max-height:500px}}
-.swatch.neighbor{border-color:#008080}
-</style>
-<link rel="stylesheet" href="theme.css">
-<script src="i18n.js"></script></head>
-<body>
-<div class="top"><div><h1>Common Metallic Crystal Structures</h1><p>Geometry-based 3D crystal diagrams · BCC / FCC / HCP</p></div><div class="controls"><button id="reset">Reset rotation</button><button id="png">Export PNG (3 panels)</button><button id="svg">Export SVG (vector)</button></div></div>
-<div class="main" id="cards"></div>
-<div class="legend"><span><i class="swatch"></i> Unit-cell edge</span><span><i class="swatch neighbor"></i> Nearest-neighbor connection</span><span><i class="swatch dash"></i> Rear line</span><span><i class="swatch atom"></i> Atom position</span></div>
-<p class="note">Drag to rotate or scroll to zoom. Teal lines link nearest neighbors shown within each unit cell. In BCC, the body center connects to all eight corners. The HCP prism includes a center atom in each outer A layer and three atoms in the middle B layer.</p>
-<script type="module">
 await window.i18nReady;
 'use strict';
 const W=520,H=480;
@@ -138,5 +121,3 @@ function exportSvg() {
 }
 document.getElementById('svg').onclick=exportSvg;
 init();
-</script>
-</body></html>

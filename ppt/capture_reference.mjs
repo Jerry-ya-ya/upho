@@ -24,7 +24,7 @@ try {
   ws.addEventListener('message', e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } });
   const send = (method, params = {}) => new Promise((resolve, reject) => { pending.set(++id, { resolve, reject }); ws.send(JSON.stringify({ id, method, params })); });
   await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-  await send('Page.navigate', { url: pathToFileURL(path.resolve(dir, '../reference/src/phonon_modes.html')).href });
+  await send('Page.navigate', { url: pathToFileURL(path.resolve(dir, '../reference/src/pages/modes/modes.html')).href });
   let result;
   for (let i = 0; i < 50; i++) {
     result = await send('Runtime.evaluate', { expression: `document.readyState === 'complete' && !!document.querySelector('#optical-k')`, returnByValue: true });

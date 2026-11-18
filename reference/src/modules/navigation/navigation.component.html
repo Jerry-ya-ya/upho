@@ -1,0 +1,8 @@
+<header>
+<a class="brand" href="#home">UPHO <span>REFERENCE</span></a>
+<div class="actions"><a href="https://github.com/Jerry-ya-ya/upho">GitHub ↗</a>
+<button type="button" class="language" (click)="i18n.toggle()" aria-label="切換語言 / Switch language">
+<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6.5h14M5 17.5h14"/></svg>
+<span>{{i18n.lang()==='en'?'繁體中文':'English'}}</span></button></div>
+</header>
+<nav [attr.aria-label]="i18n.lang()==='en'?'Main navigation':'主導覽'">@for(page of pages;track page.id){<a [href]="'#'+page.id" [class.active]="current()===page.id" [attr.aria-current]="current()===page.id?'page':null">{{i18n.t(page.title)}}</a>}</nav>

@@ -18,29 +18,32 @@
             ],
             "assets": [
               {
-                "glob": "*.html",
-                "input": "src",
-                "output": "content",
+                "glob": "**/*",
+                "input": "src/pages",
+                "output": "content/pages",
                 "ignore": [
-                  "index.html"
+                  "**/*.ts",
+                  "**/*.component.html",
+                  "**/*.component.css"
                 ]
               },
               {
+                "glob": "**/*.js",
+                "input": "src/modules",
+                "output": "content/modules"
+              },
+              {
                 "glob": "theme.css",
-                "input": "src",
-                "output": "content"
+                "input": "src/modules/theme",
+                "output": "content/modules/theme"
               },
               {
                 "glob": "*.json",
                 "input": "src/i18n",
                 "output": "content/i18n"
-              },
-              {
-                "glob": "i18n.js",
-                "input": "src",
-                "output": "content"
               }
-            ]
+            ],
+            "outputHashing": "all"
           }
         },
         "serve": {

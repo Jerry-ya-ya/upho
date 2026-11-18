@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Common Metallic Crystal Structures — Geometric 3D Viewer</title>
+<link rel="stylesheet" href="crystals.css">
+<link rel="stylesheet" href="../../modules/theme/theme.css">
+<script src="../../modules/i18n/i18n.js"></script></head>
+<body>
+<div class="top"><div><h1>Common Metallic Crystal Structures</h1><p>Geometry-based 3D crystal diagrams · BCC / FCC / HCP</p></div><div class="controls"><button id="reset">Reset rotation</button><button id="png">Export PNG (3 panels)</button><button id="svg">Export SVG (vector)</button></div></div>
+<div class="main" id="cards"></div>
+<div class="legend"><span><i class="swatch"></i> Unit-cell edge</span><span><i class="swatch neighbor"></i> Nearest-neighbor connection</span><span><i class="swatch dash"></i> Rear line</span><span><i class="swatch atom"></i> Atom position</span></div>
+<p class="note">Drag to rotate or scroll to zoom. Teal lines link nearest neighbors shown within each unit cell. In BCC, the body center connects to all eight corners. The HCP prism includes a center atom in each outer A layer and three atoms in the middle B layer.</p>
+<script type="module" src="crystals.js"></script>
+</body></html>

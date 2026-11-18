@@ -1,0 +1,2 @@
+main{max-width:1200px;margin:auto;padding:60px 35px}.eyebrow{font-size:12px;letter-spacing:3px;color:#557466}h1{font-size:clamp(40px,6vw,76px);line-height:1.2;letter-spacing:-2px;margin:24px 0}.lead{font-size:20px;max-width:720px;line-height:1.8;color:#52675e}.topics{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:65px}.topics a{border-top:2px solid #577f6c;padding:22px 0}.topics small{color:#6c8177}.topics p{line-height:1.8;min-height:64px}.topics span{font-size:14px}
+@media(max-width:700px){.topics{grid-template-columns:1fr}main{padding:30px 24px}}

@@ -4,62 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>聲子能帶展開公式 · UPHO</title>
-  <style>
-    :root {
-      color-scheme: light;
-      font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-      color: #192e39;
-      background: #f4f5ef;
-      --subtle: #4f6469;
-      --line: #d6dfd8;
-      --teal: #14685c;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; line-height: 1.6; }
-    main { width: min(1120px, 100%); margin: auto; padding: clamp(22px, 5vw, 58px); }
-    h1, h2, h3, p { margin: 0; }
-    h1 { font-size: clamp(2.05rem, 5vw, 4rem); line-height: 1.12; letter-spacing: -.045em; }
-    h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.25; }
-    h3 { font-size: 1.18rem; line-height: 1.35; }
-    .lead { color: var(--subtle); margin-top: 13px; max-width: 64ch; }
-    nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 19px 0 32px; }
-    nav a { border: 1px solid var(--line); background: #fff; padding: 5px 13px; border-radius: 8px; }
-    a { color: #155c52; text-underline-offset: .2em; }
-    section { margin-top: 30px; scroll-margin-top: 20px; }
-    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-    .card { min-width: 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
-    .wide { grid-column: 1 / -1; }
-    .card p { margin-top: 8px; color: var(--subtle); }
-    .equation {
-      margin-top: 11px;
-      padding: 9px 12px;
-      background: #f0f7f3;
-      border-left: 3px solid #7fae9d;
-      overflow-x: auto;
-      font-size: clamp(1.07rem, 2.3vw, 1.34rem);
-    }
-    math[display="block"] { margin: .15em 0; }
-    .links, footer { font-size: .88rem; }
-    code, pre { font-family: "Cascadia Mono", Consolas, monospace; }
-    details { margin-top: 10px; }
-    summary, button { cursor: pointer; }
-    summary { width: fit-content; color: var(--teal); font-size: .88rem; }
-    :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
-    pre { margin: 8px 0; padding: 9px 11px; overflow-x: auto; border: 1px solid var(--line); }
-    button { font: inherit; font-size: .82rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 6px; background: white; color: #155c52; }
-    [role="status"] { font-size: .82rem; color: var(--subtle); margin-left: 8px; }
-    footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--subtle); }
-    @media (max-width: 730px) { .cards { grid-template-columns: 1fr; } }
-    @media print {
-      :root, .card { background: white; }
-      main { width: 100%; padding: 0; }
-      nav, details { display: none; }
-      .card { break-inside: avoid; }
-      h2 { break-after: avoid; }
-    }
-  </style>
-<link rel="stylesheet" href="theme.css">
-<script src="i18n.js"></script></head>
+  <link rel="stylesheet" href="formulas.css">
+<link rel="stylesheet" href="../../modules/theme/theme.css">
+<script src="../../modules/i18n/i18n.js"></script></head>
 <body>
   <main>
     <header>
@@ -187,38 +134,6 @@ w_{\mathbf k,X}=w_{\mathbf k}\,w_X</annotation></semantics></math></span>
       · <a href="https://github.com/Jerry-ya-ya/upho/blob/master/docsrc/output.rst" target="_blank" rel="noopener">UPHO 輸出欄位</a>
     </footer>
   </main>
-  <script type="module">
-await window.i18nReady;
-    for (const equation of document.querySelectorAll(".equation")) {
-      const formulas = Array.from(equation.querySelectorAll("annotation"), node => node.textContent);
-      if (!formulas.length) continue;
-      const details = document.createElement("details");
-      const summary = document.createElement("summary");
-      summary.textContent = "顯示 LaTeX";
-      const source = document.createElement("pre");
-      source.tabIndex = 0;
-      source.textContent = formulas.map(formula => "\\[\n" + formula + "\n\\]").join("\n\n");
-      const copy = document.createElement("button");
-      copy.type = "button";
-      copy.textContent = "複製 LaTeX";
-      const status = document.createElement("span");
-      status.setAttribute("role", "status");
-      copy.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(source.textContent);
-          status.textContent = "已複製";
-        } catch {
-          const range = document.createRange();
-          range.selectNodeContents(source);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-          status.textContent = "已選取公式，按 Ctrl+C 或 ⌘C 複製。";
-        }
-      });
-      details.append(summary, source, copy, status);
-      equation.after(details);
-    }
-  </script>
+  <script type="module" src="formulas.js"></script>
 </body>
 </html>

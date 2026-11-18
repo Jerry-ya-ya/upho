@@ -23,3 +23,5 @@
 - Add a Markdown-driven phonon presentation workflow with editable tables, reference figures, LaTeX formula rendering, documented build scripts, and ignored generated PowerPoint files.
 
 - Add an Angular reference site with shared styling, hash navigation and GitHub Pages deployment, move reference pages into src, update presentation paths, and document unresolved development dependency vulnerabilities with localhost-only serving.
+
+- Add persistent Chinese and English switching with a globe button, JSON translation catalogs, and localization for reference pages, dynamic labels, and canvas text.
