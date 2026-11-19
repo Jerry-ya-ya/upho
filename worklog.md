@@ -27,3 +27,7 @@
 - Add persistent Chinese and English switching with a globe button, JSON translation catalogs, and localization for reference pages, dynamic labels, and canvas text.
 
 - Organize reference modules and pages with colocated HTML, styles and interaction scripts, extract reusable navigation and content components, fix UTF-8 titles and the SVG language icon, enable hashed build assets, and update presentation paths and documentation.
+
+## 2026/11/19
+
+- Add bilingual interactive formula animations and parameter callouts, fix whitespace handling in localization, document formula controls, and configure Angular CLI analytics.

@@ -91,4 +91,5 @@
       .modes, .dispersion { grid-template-columns: 1fr; }
       .wave-control { flex-wrap: wrap; }
     }
-  
+
+.mode-comparison{margin:28px 0;padding:20px;background:white;border:1px solid #d6dfd8;border-radius:12px}.comparison-scroll{overflow-x:auto}.mode-comparison table{width:100%;border-collapse:collapse;font-size:.95rem}.mode-comparison th,.mode-comparison td{padding:12px;text-align:left;border-bottom:1px solid #d6dfd8;vertical-align:top}.mode-comparison thead{background:#edf5f0}.mode-comparison p{line-height:1.7}.mode-comparison a{color:#14685c}

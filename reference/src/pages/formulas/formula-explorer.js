@@ -4,6 +4,11 @@ const NS = 'http://www.w3.org/2000/svg';
 const equations = [...document.querySelectorAll('.equation')];
 for (const equation of equations) {
   const hint = document.createElement('p'); hint.className = 'parameter-hint'; hint.textContent = t('animation.hint'); equation.before(hint);
+  let showAll = false;
+  const updates = [];
+  const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'all-parameters';
+  const refresh = () => { toggle.textContent = t(showAll ? 'animation.hideAll' : 'animation.showAll'); toggle.setAttribute('aria-pressed', String(showAll)); updates.forEach(update => update()); };
+  toggle.addEventListener('click', () => { showAll = !showAll; refresh(); }); equation.prepend(toggle);
   for (const math of equation.querySelectorAll('math')) {
     const wrap = document.createElement('div'); wrap.className = 'annotated-formula';
     const scroll = document.createElement('div'); scroll.className = 'math-scroll';
@@ -13,23 +18,47 @@ for (const equation of equations) {
     const svg = document.createElementNS(NS,'svg'); svg.classList.add('parameter-lines'); svg.setAttribute('aria-hidden','true');
     math.parentNode.insertBefore(wrap,math); scroll.append(math); wrap.append(above,scroll,below,svg);
     let active;
+    let connections = [];
     const draw = () => {
-      svg.replaceChildren(); if(!active) return;
-      const r=wrap.getBoundingClientRect(), a=active.getBoundingClientRect();
-      const isAbove=active.dataset.side==='above', box=isAbove?above:below, b=box.getBoundingClientRect();
-      if(a.right<scroll.getBoundingClientRect().left || a.left>scroll.getBoundingClientRect().right) return;
-      const x=a.left+a.width/2-r.left, y=(isAbove?a.top:a.bottom)-r.top;
-      const bx=b.left+b.width/2-r.left, by=(isAbove?b.bottom:b.top)-r.top;
-      const line=document.createElementNS(NS,'path');line.setAttribute('d',`M ${x} ${y} L ${x} ${(y+by)/2} L ${bx} ${by}`);svg.append(line);
-      const dot=document.createElementNS(NS,'circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','3');svg.append(dot);
+      svg.replaceChildren();
+      for (const [symbol, box] of connections) {
+        const r=wrap.getBoundingClientRect(), a=symbol.getBoundingClientRect(), b=box.getBoundingClientRect();
+        const isAbove=box.parentNode===above;
+        if(a.right<scroll.getBoundingClientRect().left || a.left>scroll.getBoundingClientRect().right) continue;
+        const x=a.left+a.width/2-r.left, y=(isAbove?a.top:a.bottom)-r.top;
+        const bx=b.left+b.width/2-r.left, by=(isAbove?b.bottom:b.top)-r.top;
+        const line=document.createElementNS(NS,'path');line.setAttribute('d',`M ${x} ${y} L ${x} ${(y+by)/2} L ${bx} ${by}`);svg.append(line);
+        const dot=document.createElementNS(NS,'circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','3');svg.append(dot);
+      }
     };
     const symbols=[...math.querySelectorAll('mi')].filter(el=>t('parameter.'+el.textContent)!=='parameter.'+el.textContent);
     const parameterKey = el => 'parameter.'+(el.textContent==='G' && math.textContent.includes('μ')?'Ḡ':el.textContent);
-    const choose = el => {active?.classList.remove('selected-parameter');active=el;el.classList.add('selected-parameter');above.textContent='';below.textContent='';(el.dataset.side==='above'?above:below).textContent=t(parameterKey(el));requestAnimationFrame(draw);};
+    const update = () => {
+      above.replaceChildren(); below.replaceChildren(); connections = [];
+      // Map retains the last occurrence but the first insertion order. Sort by
+      // the actual anchor position so repeated symbols cannot reverse leaders.
+      const unique = [...new Map(symbols.map(el => [parameterKey(el), el])).values()]
+        .sort((a,b) => {
+          const ra=a.getBoundingClientRect(), rb=b.getBoundingClientRect();
+          return (ra.left+ra.width/2)-(rb.left+rb.width/2);
+        });
+      wrap.classList.toggle('all-parameters-visible', showAll);
+      const displayed = showAll ? unique : active ? [active] : [];
+      symbols.forEach(el => el.classList.toggle('selected-parameter', showAll || el === active));
+      displayed.forEach((el,i) => {
+        const label = document.createElement('span'); label.className = 'parameter-label'; label.textContent = t(parameterKey(el));
+        (showAll ? (i%2 ? below : above) : (el.dataset.side==='above' ? above : below)).append(label);
+        connections.push([el,label]);
+      });
+      requestAnimationFrame(draw);
+    };
+    updates.push(update);
+    const choose = el => { active=el; update(); };
     symbols.forEach((el,i)=>{el.setAttribute('tabindex','0');el.setAttribute('role','button');el.setAttribute('aria-label',t(parameterKey(el)));el.dataset.side=i%2?'below':'above';el.classList.add('parameter-symbol');el.addEventListener('click',()=>choose(el));el.addEventListener('focus',()=>choose(el));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(el);}});});
     if(symbols.length) choose(symbols[0]);
-    new ResizeObserver(draw).observe(wrap);scroll.addEventListener('scroll',draw);document.fonts.ready.then(draw);
+    new ResizeObserver(draw).observe(wrap);scroll.addEventListener('scroll',draw);document.fonts.ready.then(update);
   }
+  refresh();
 }
 function demo(index, kind) {
   const section=document.createElement('div');section.className='formula-demo';
