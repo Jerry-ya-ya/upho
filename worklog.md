@@ -25,3 +25,5 @@
 - Add an Angular reference site with shared styling, hash navigation and GitHub Pages deployment, move reference pages into src, update presentation paths, and document unresolved development dependency vulnerabilities with localhost-only serving.
 
 - Add persistent Chinese and English switching with a globe button, JSON translation catalogs, and localization for reference pages, dynamic labels, and canvas text.
+
+- Organize reference modules and pages with colocated HTML, styles and interaction scripts, extract reusable navigation and content components, fix UTF-8 titles and the SVG language icon, enable hashed build assets, and update presentation paths and documentation.

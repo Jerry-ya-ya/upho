@@ -29,3 +29,5 @@ await window.i18nReady;
       details.append(summary, source, copy, status);
       equation.after(details);
     }
+
+await import('./formula-explorer.js');

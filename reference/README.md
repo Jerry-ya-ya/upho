@@ -51,3 +51,9 @@ src/
 開發伺服器僅綁定 127.0.0.1。建置使用儲存庫內固定 glob，勿將不可信輸入當作 glob 或執行不可信建置設定。GitHub Pages 僅發布 dist/browser 靜態產物，不發布 Node 建置工具。這些措施限制暴露範圍，並未修補 picomatch 本身；待官方提供修補版後更新鎖定檔並重跑 npm audit 與 npm run build。
 
 建置的 JS/CSS 檔名包含內容雜湊，讓新版部署使用新的資源網址。入口 HTML 以 UTF-8 儲存，瀏覽器標題由語言服務同步切換。
+
+## 公式互動
+
+`src/pages/formulas/formula-explorer.js` 為既有 13 條 MathML 公式加入參數引線。點選符號或以 Tab / Enter 選取，會在公式上方或下方顯示說明；公式橫向捲動及視窗縮放後引線會重新定位。說明與控制項翻譯位於 i18n JSON 的 `parameter.*`、`animation.*`。
+
+五組動畫展示 Bloch 相位、波向量折疊、等幅分量的相位投影、Lorentzian 展寬與權重、star 算術平均。示意值與材料算例分開標示。動畫預設暫停，離開可視區或隱藏分頁時停止更新。公式與 LaTeX 原文仍保留，可供閱讀與複製。
