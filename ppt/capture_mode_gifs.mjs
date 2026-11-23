@@ -16,7 +16,7 @@ const server=http.createServer(async(req,res)=>{try{const p=path.resolve(root,'.
         drawChain(modes[index],data,0.15,phase/data.frequency);
         const original=modes[index].context.canvas;
         const result=document.createElement('canvas');result.width=720;result.height=160;
-        const ctx=result.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,720,160);ctx.translate(0,160);ctx.rotate(-Math.PI/2);ctx.drawImage(original,0,0);
+        const ctx=result.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,720,160);ctx.drawImage(original,0,0);
         return result.toDataURL('image/png').split(',')[1];
       };
     })();`));res.setHeader('Content-Type',({'.js':'text/javascript','.json':'application/json','.css':'text/css','.html':'text/html; charset=utf-8'})[path.extname(p)]||'application/octet-stream');res.end(data);}catch(e){res.statusCode=404;res.end(String(e));}});

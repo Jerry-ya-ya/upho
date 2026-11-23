@@ -97,7 +97,17 @@
 .dispersion{margin-top:24px}.k-actions{margin:12px 0}.sublattice-note{padding:12px 16px;border-left:3px solid var(--acoustic);background:white}.k-plot p{overflow-wrap:anywhere}
 
 .paired-intro{margin:16px 0;line-height:1.7;color:var(--muted)}
-.paired-motion{display:grid;grid-template-columns:360fr 160fr;align-items:start;margin:16px 0}
+.paired-motion{display:grid;grid-template-columns:1fr;align-items:start;margin:16px 0}
 .paired-motion figure{margin:0;min-width:0}
 .paired-motion figcaption{font-size:.9rem;min-height:3em;text-align:center;color:var(--muted)}
 .paired-motion canvas{width:100%;height:auto}
+
+.paired-motion figcaption{min-height:0;margin:8px 0}.paired-motion figure{width:100%}
+
+.wave-guide{margin-top:24px;padding:22px;background:white;border:1px solid var(--line);border-radius:16px}
+.wave-guide p{margin:10px 0;color:var(--muted);line-height:1.7}
+.wave-guide h3{font-size:1.05rem;color:var(--acoustic);margin:14px 0 6px}
+.wave-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
+.wave-equation{font-family:'Cambria Math',serif}.bz-path{margin:18px 0;padding:16px;background:#f7faf8;border-radius:10px}
+.bz-path svg{display:block;width:100%;height:auto}.bz-path figcaption{font-weight:650}.wave-guide-source a{color:var(--acoustic)}
+@media(max-width:780px){.wave-guide-grid{grid-template-columns:1fr}.wave-guide{padding:16px}.bz-path{padding:8px}}

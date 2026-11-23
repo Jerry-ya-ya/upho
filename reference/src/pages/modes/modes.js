@@ -60,8 +60,6 @@ await window.i18nReady;
         const ctx = mode.context;
         ctx.save();
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.translate(160, 0);
-        ctx.rotate(Math.PI / 2);
         const y = 61;
         const centerCell = 3;
         const cellStart = firstX + (centerCell * 2 - 0.5) * step;
@@ -160,42 +158,47 @@ await window.i18nReady;
         ctx.fillText("0", 25, bottom + 5);
       }
 
-      // Use precisely the chain's equilibrium positions, Bloch phase and time.
-      // The horizontal axis is a displacement value, not transverse motion.
+      // Each column belongs to one A/B cell. Vertical distance is a time
+      // offset (in dimensionless model time), not an extra spatial direction.
       function drawDisplacement(canvas, data, reducedQ, time) {
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const center = 190, scale = 95;
-        const position = index => firstX + index * step;
-        const displacement = (index, site) => data.amplitudes[site] *
-          Math.cos(Math.PI * reducedQ * (index / 2 - 3) - data.frequency * time);
-        ctx.font = '18px Segoe UI, sans-serif';
-        ctx.textAlign = 'center';ctx.fillStyle = '#50636b';
-        ctx.fillText('u / max|u|', center, 23);
-        ctx.strokeStyle = '#80919a';ctx.lineWidth = 1;
-        line(ctx, center-scale, 40, center+scale, 40);
-        line(ctx, center, 40, center, 685);
-        for (const tick of [-1,0,1]) ctx.fillText(String(tick),center+tick*scale,58);
-        ctx.fillText('r ∥ q ↓', 45, 360);
-        const colors = ['#233d70','#a34329'];
-        for (let site=0;site<2;site++) {
-          ctx.strokeStyle=colors[site];ctx.lineWidth=3;
-          ctx.setLineDash(site ? [8,5] : []);ctx.beginPath();
-          for(let j=0;j<=220;j++) {
-            const index=11*j/220, x=center+scale*displacement(index,site), y=position(index);
-            if(j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-          }
-          ctx.stroke();ctx.setLineDash([]);
-          for(let index=site;index<atomCount;index+=2) {
-            const x=center+scale*displacement(index,site), y=position(index);
+        ctx.clearRect(0, 0, 720, 360);
+        const top=50, bottom=300, scale=32, horizon=2*Math.PI;
+        const colors=['#233d70','#a34329'];
+        ctx.font='15px Segoe UI, sans-serif';ctx.textAlign='center';
+        ctx.fillStyle='#50636b';
+        ctx.fillText(window.translate('modes.columnAxes'),360,18);
+        for(let cell=0;cell<atomCount/2;cell++) {
+          const center=firstX+(2*cell+0.5)*step;
+          ctx.fillStyle=cell%2?'#f5f8f6':'#fff';
+          ctx.fillRect(center-step,30,step*2,325);
+          ctx.strokeStyle='#d6e0dc';ctx.lineWidth=1;
+          line(ctx,center,top,center,bottom);
+          line(ctx,center-scale-6,bottom,center+scale+6,bottom);
+          ctx.fillStyle='#50636b';ctx.fillText('A'+(cell+1)+' / B'+(cell+1),center,42);
+          for(let site=0;site<2;site++) {
+            const index=2*cell+site;
+            const phase=Math.PI*reducedQ*(index/2-3);
+            const value=offset=>data.amplitudes[site]*Math.cos(phase-data.frequency*(time+offset));
+            ctx.strokeStyle=colors[site];ctx.lineWidth=2;
+            ctx.setLineDash(site?[5,4]:[]);ctx.beginPath();
+            for(let j=0;j<=120;j++) {
+              const y=top+(bottom-top)*j/120;
+              const x=center+scale*value(horizon*(1-j/120));
+              if(j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+            }
+            ctx.stroke();ctx.setLineDash([]);
+            const x=center+scale*value(0);
             ctx.fillStyle=colors[site];ctx.beginPath();
-            if(site===0)ctx.arc(x,y,6,0,2*Math.PI);
-            else {ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.lineTo(x-7,y);ctx.closePath();}
+            if(site===0)ctx.arc(x,bottom,4,0,2*Math.PI);
+            else {ctx.moveTo(x,bottom-5);ctx.lineTo(x+5,bottom);ctx.lineTo(x,bottom+5);ctx.lineTo(x-5,bottom);ctx.closePath();}
             ctx.fill();
+            ctx.strokeStyle=colors[site];ctx.lineWidth=1;ctx.setLineDash([2,4]);
+            line(ctx,x,bottom+7,firstX+index*step+13*value(0),355);
+            ctx.setLineDash([]);
           }
+          ctx.fillStyle='#50636b';ctx.fillText('−1   0   +1',center,325);
         }
-        ctx.fillStyle=colors[0];ctx.fillText('● A',125,710);
-        ctx.fillStyle=colors[1];ctx.fillText('◆ B',255,710);
       }
 
       function drawDispersion(reducedQ, selected) {
@@ -265,6 +268,9 @@ await window.i18nReady;
         reducedQ = value;
         wavevector.value = String(value);
         waveValue.value = value.toFixed(2);
+        document.querySelector('#bz-current').setAttribute('cx', String(360+290*value));
+        document.querySelector('#bz-current-label').textContent =
+          window.translate('waveGuide.current')+' qa/π = '+value.toFixed(2)+'; Δφ = '+value.toFixed(2)+'π';
         selected = normalModes(value);
         elapsed = 0;
         modes.forEach((mode, index) => {

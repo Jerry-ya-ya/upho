@@ -33,3 +33,7 @@
 - Add bilingual interactive formula animations and parameter callouts, fix whitespace handling in localization, document formula controls, and configure Angular CLI analytics.
 
 - Add a bilingual acoustic and optical phonon comparison, introduce a show-all parameter toggle with spatially ordered formula callouts, and remove redundant formula explanations.
+
+## 2026/11/23
+
+- Add a manuscript-driven presentation workflow with versioned PPT/PDF archives, annotated formulas, GIFs and a UPHO flowchart focused on material screening, and expand bilingual reference pages with reciprocal-space explanations, synchronized phonon views and corrected formula labels.
