@@ -28,10 +28,11 @@ function text(slide, value, x, y, w, h, size = 26, bold = false) {
 async function picture(slide, item, box) {
   const imagePath = path.resolve(path.dirname(source), item.src);
   const bytes = await fs.readFile(imagePath);
-  if (bytes.toString('ascii', 1, 4) !== 'PNG') throw new Error(`Expected PNG: ${imagePath}`);
-  const iw = bytes.readUInt32BE(16), ih = bytes.readUInt32BE(20);
+  const gif = bytes.toString('ascii', 0, 3) === 'GIF';
+  if (!gif && bytes.toString('ascii', 1, 4) !== 'PNG') throw new Error(`Expected PNG or GIF: ${imagePath}`);
+  const iw = gif ? bytes.readUInt16LE(6) : bytes.readUInt32BE(16), ih = gif ? bytes.readUInt16LE(8) : bytes.readUInt32BE(20);
   const scale = Math.min(box.width / iw, box.height / ih);
-  slide.images.add({ blob: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), contentType: 'image/png', alt: item.alt,
+  slide.images.add({ blob: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), contentType: gif ? 'image/gif' : 'image/png', alt: item.alt,
     position: { left: box.left + (box.width - iw * scale) / 2, top: box.top + (box.height - ih * scale) / 2, width: iw * scale, height: ih * scale } });
 }
 for (const [index, part] of parts.entries()) {
@@ -39,7 +40,7 @@ for (const [index, part] of parts.entries()) {
   const body = part.replace(/::: notes\n[\s\S]*?\n:::/g, '');
   const title = body.match(/^# (.+)$/m)?.[1];
   const layout = body.match(/<!-- layout: (\w+) -->/)?.[1];
-  if (!title || !['cover', 'image', 'table', 'pair', 'spectrum', 'formula', 'text'].includes(layout)) throw new Error(`Missing title/layout on slide ${index + 1}`);
+  if (!title || !['cover', 'image', 'table', 'pair', 'spectrum', 'formula', 'annotated', 'image_table', 'pair_split', 'dispersion', 'diagram', 'text'].includes(layout)) throw new Error(`Missing title/layout on slide ${index + 1}`);
   const images = [...body.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(m => ({ alt: m[1], src: m[2] }));
   const prose = body.replace(/\$\$\n[\s\S]*?\n\$\$/g, '').split('\n').filter(l => l.trim() && !/^(# |<!--|!\[|\|)/.test(l));
   const slide = presentation.slides.add(); slide.background.fill = '#ffffff';
@@ -53,29 +54,46 @@ for (const [index, part] of parts.entries()) {
     continue;
   }
   text(slide, title, 48, 27, 1184, 72, title.length > 48 ? 34 : 40, true);
-  if (layout === 'formula') {
+  if (layout === 'dispersion') {
+    await picture(slide, images[0], {left: 50, top: 115, width: 650, height: 280});
+    const sections=prose.join('\n').split('===');
+    text(slide, sections[0].trim(), 740, 125, 490, 300, 26);
+    text(slide, sections[1].trim(), 65, 445, 1150, 200, 26);
+  } else if (layout === 'diagram') {
+    await picture(slide, images[0], {left: 40, top: 110, width: 1200, height: 550});
+  } else if (layout === 'annotated') {
+    if (images.length !== 1) throw Error('Annotated formula needs one image');
+    await picture(slide, images[0], {left: 45, top: 112, width: 1190, height: 545});
+  } else if (layout === 'formula') {
     await picture(slide, {src: `assets/formula-${++formulaIndex}.png`, alt: latex}, {left: 55, top: 120, width: 1170, height: 300});
     text(slide, prose.join('\n'), 65, 470, 1150, 175, 26);
   } else if (layout === 'text') {
     text(slide, prose.map((line, i) => line + (i % 2 ? '\n' : '')).join('\n'), 65, 145, 1150, 490, 28);
-  } else if (layout === 'table') {
+  } else if (layout === 'table' || layout === 'image_table') {
+    const combined = layout === 'image_table';
+    if (combined) await picture(slide, images[0], {left: 60, top: 100, width: 1160, height: 300});
     const values = body.split('\n').filter(l => l.startsWith('|') && !/^\|[\s:|-]+\|$/.test(l)).map(l => l.split('|').slice(1, -1).map(s => s.trim()));
     if (!values.length || values.some(r => r.length !== values[0].length)) throw new Error('Invalid Markdown table');
-    const table = slide.tables.add({ rows: values.length, columns: values[0].length, left: 60, top: 160, width: 1160, height: 320, columnWidths: [280, 610, 270], values });
+    const table = slide.tables.add({ rows: values.length, columns: values[0].length, left: 60, top: combined ? 405 : 160, width: 1160, height: combined ? 210 : 320, columnWidths: [280, 610, 270], values });
     table.borders.assign({ fill: '#b5bbc2', width: 1, style: 'solid' });
     for (let r = 0; r < values.length; r++) for (let c = 0; c < values[r].length; c++) {
       const cell = table.getCell(r, c); cell.fill = r ? '#ffffff' : '#e8edf1';
-      cell.text.style = { typeface: font, fontSize: 27, bold: r === 0, color: '#20242a' };
+      cell.text.style = { typeface: font, fontSize: combined ? 23 : 27, bold: r === 0, color: '#20242a' };
     }
-    text(slide, prose.join('\n'), 60, 540, 1160, 100);
+    text(slide, prose.join('\n'), 60, combined ? 630 : 540, 1160, combined ? 40 : 100, combined ? 20 : 26);
     tableSlides.push(index + 1);
-  } else if (layout === 'pair') {
+  } else if (layout === 'pair' || layout === 'pair_split') {
     if (images.length !== 2) throw new Error('Pair layout needs two images');
     for (const [j, item] of images.entries()) {
       text(slide, item.alt, 50 + j * 610, 145, 575, 58, 25, true);
       await picture(slide, item, { left: 40 + j * 620, top: 215, width: 580, height: 235 });
     }
-    text(slide, prose.join('\n'), 55, 490, 1170, 165, 26);
+    if (layout === 'pair_split') {
+      const columns=prose.join('\n').split('===');
+      if(columns.length!==2) throw Error('pair_split requires === between descriptions');
+      text(slide, columns[0].trim(), 55, 485, 560, 175, 23);
+      text(slide, columns[1].trim(), 675, 485, 550, 175, 23);
+    } else text(slide, prose.join('\n'), 55, 490, 1170, 165, 26);
   } else {
     if (images.length !== 1) throw new Error('Image layout needs one image');
     await picture(slide, images[0], { left: 50, top: 100, width: 1180, height: layout === 'spectrum' ? 530 : 425 });

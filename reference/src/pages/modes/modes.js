@@ -58,6 +58,10 @@ await window.i18nReady;
 
       function drawChain(mode, data, reducedQ, time) {
         const ctx = mode.context;
+        ctx.save();
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.translate(160, 0);
+        ctx.rotate(Math.PI / 2);
         const y = 61;
         const centerCell = 3;
         const cellStart = firstX + (centerCell * 2 - 0.5) * step;
@@ -111,6 +115,7 @@ await window.i18nReady;
         ctx.font = "15px Segoe UI, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("unit cell", cellStart + step, 150);
+        ctx.restore();
       }
 
       const dispersion = Array.from({length: 101}, (_, index) => normalModes(index / 100));
@@ -155,73 +160,42 @@ await window.i18nReady;
         ctx.fillText("0", 25, bottom + 5);
       }
 
-      function drawDisplacement(canvas, amplitudes) {
-        const ctx = canvas.getContext("2d");
-        const left = 62, right = 651, top = 18, bottom = 179;
-        const center = (top + bottom) / 2;
-        const x = turn => left + turn * (right - left);
-        const y = (turn, amplitude) => center -
-          62 * amplitude * Math.sin(turn * 2 * Math.PI);
-        const colors = ["#233d70", "#a34329"];
-        const ticks = ["0", "π/2", "π", "3π/2", "2π"];
-        ctx.fillStyle = "#50636b";
-        ctx.font = "19px Segoe UI, sans-serif";
-        ctx.textAlign = "center";
-        ctx.lineWidth = 1;
-        for (const [index, label] of ticks.entries()) {
-          const tick = x(index / (ticks.length - 1));
-          ctx.strokeStyle = "#e1e8e5";
-          line(ctx, tick, top, tick, bottom);
-          ctx.fillText(label, tick, bottom + 25);
-        }
-        ctx.strokeStyle = "#80919a";
-        line(ctx, left, center, right + 15, center);
-        line(ctx, left, top, left, bottom);
-        ctx.fillText("0", 40, center + 6);
-        ctx.fillText("θ", right + 35, center + 6);
-        ctx.save();
-        ctx.translate(17, center);
-        ctx.rotate(-Math.PI / 2);
-        ctx.font = "16px Segoe UI, sans-serif";
-        ctx.textBaseline = "middle";
-        ctx.fillText("Normalized displacement u", 0, 0);
-        ctx.restore();
-
-        for (const [site, amplitude] of amplitudes.entries()) {
-          // Coincident acoustic curves share a stroke. The site markers identify both.
-          if (site === 1 && Math.abs(amplitude - amplitudes[0]) < 1e-6) break;
-          ctx.strokeStyle = colors[site];
-          ctx.lineWidth = 3.5;
-          ctx.setLineDash(site === 1 ? [9, 6] : []);
-          ctx.beginPath();
-          ctx.moveTo(left, y(0, amplitude));
-          for (let sample = 1; sample <= 144; sample++) {
-            const turn = sample / 144;
-            ctx.lineTo(x(turn), y(turn, amplitude));
+      // Use precisely the chain's equilibrium positions, Bloch phase and time.
+      // The horizontal axis is a displacement value, not transverse motion.
+      function drawDisplacement(canvas, data, reducedQ, time) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const center = 190, scale = 95;
+        const position = index => firstX + index * step;
+        const displacement = (index, site) => data.amplitudes[site] *
+          Math.cos(Math.PI * reducedQ * (index / 2 - 3) - data.frequency * time);
+        ctx.font = '18px Segoe UI, sans-serif';
+        ctx.textAlign = 'center';ctx.fillStyle = '#50636b';
+        ctx.fillText('u / max|u|', center, 23);
+        ctx.strokeStyle = '#80919a';ctx.lineWidth = 1;
+        line(ctx, center-scale, 40, center+scale, 40);
+        line(ctx, center, 40, center, 685);
+        for (const tick of [-1,0,1]) ctx.fillText(String(tick),center+tick*scale,58);
+        ctx.fillText('r ∥ q ↓', 45, 360);
+        const colors = ['#233d70','#a34329'];
+        for (let site=0;site<2;site++) {
+          ctx.strokeStyle=colors[site];ctx.lineWidth=3;
+          ctx.setLineDash(site ? [8,5] : []);ctx.beginPath();
+          for(let j=0;j<=220;j++) {
+            const index=11*j/220, x=center+scale*displacement(index,site), y=position(index);
+            if(j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
           }
-          ctx.stroke();
-        }
-        ctx.setLineDash([]);
-        for (let index = 0; index <= 12; index++) {
-          const site = index % 2;
-          const turn = index / 12;
-          const px = x(turn), py = y(turn, amplitudes[site]);
-          ctx.fillStyle = colors[site];
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          if (site === 0) {
-            ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
-          } else {
-            ctx.moveTo(px, py - 6);
-            ctx.lineTo(px + 6, py);
-            ctx.lineTo(px, py + 6);
-            ctx.lineTo(px - 6, py);
-            ctx.closePath();
+          ctx.stroke();ctx.setLineDash([]);
+          for(let index=site;index<atomCount;index+=2) {
+            const x=center+scale*displacement(index,site), y=position(index);
+            ctx.fillStyle=colors[site];ctx.beginPath();
+            if(site===0)ctx.arc(x,y,6,0,2*Math.PI);
+            else {ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.lineTo(x-7,y);ctx.closePath();}
+            ctx.fill();
           }
-          ctx.fill();
-          ctx.stroke();
         }
+        ctx.fillStyle=colors[0];ctx.fillText('● A',125,710);
+        ctx.fillStyle=colors[1];ctx.fillText('◆ B',255,710);
       }
 
       function drawDispersion(reducedQ, selected) {
@@ -281,7 +255,10 @@ await window.i18nReady;
       let playing = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       function renderChains() {
-        modes.forEach((mode, index) => drawChain(mode, selected[index], reducedQ, elapsed));
+        modes.forEach((mode, index) => {
+          drawChain(mode, selected[index], reducedQ, elapsed);
+          drawDisplacement(document.querySelector('#'+mode.name+'-k'), selected[index], reducedQ, elapsed);
+        });
       }
 
       function selectWavevector(value) {
@@ -335,9 +312,6 @@ await window.i18nReady;
         updatePlayback();
       });
 
-      const longWavelength = normalModes(0);
-      drawDisplacement(document.querySelector("#acoustic-k"), longWavelength[0].amplitudes);
-      drawDisplacement(document.querySelector("#optical-k"), longWavelength[1].amplitudes);
       selectWavevector(Number(wavevector.value));
       updatePlayback();
     })();

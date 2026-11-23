@@ -31,3 +31,5 @@
 ## 2026/11/19
 
 - Add bilingual interactive formula animations and parameter callouts, fix whitespace handling in localization, document formula controls, and configure Angular CLI analytics.
+
+- Add a bilingual acoustic and optical phonon comparison, introduce a show-all parameter toggle with spatially ordered formula callouts, and remove redundant formula explanations.

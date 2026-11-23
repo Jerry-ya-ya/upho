@@ -1,0 +1,93 @@
+[
+  {
+    "width": 1160,
+    "height": 409,
+    "labels": 9,
+    "formula": "D_{\\kappa\\kappa'}^{\\alpha\\beta}(\\mathbf K)\n=\\frac{1}{\\sqrt{m_\\kappa m_{\\kappa'}}}\n\\sum_{\\ell'} \\Phi_{\\alpha\\beta}(0\\kappa,\\ell'\\kappa')\ne^{i\\mathbf K\\cdot(\\mathbf x_{\\ell'\\kappa'}-\\mathbf x_{0\\kappa})}",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 327,
+    "labels": 5,
+    "formula": "D(\\mathbf K)\\mathbf v_{\\mathbf KJ}\n=\\omega_{\\mathbf KJ}^{\\,2}\\mathbf v_{\\mathbf KJ}",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 322,
+    "labels": 6,
+    "formula": "\\tilde{\\mathbf v}_{\\ell\\kappa}(\\mathbf K,J)\n=e^{i\\mathbf K\\cdot\\mathbf x_{\\ell\\kappa}}\\mathbf v_{\\kappa}(\\mathbf K,J)",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 286,
+    "labels": 3,
+    "formula": "\\mathbf k=\\mathbf K+\\mathbf G_{\\mathrm{SC}}",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 391,
+    "labels": 5,
+    "formula": "\\hat P^{\\mathbf k}=\\frac{1}{N}\\sum_{j=1}^{N}\ne^{i\\mathbf k\\cdot\\mathbf t_j}\\,\\hat t_j",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 372,
+    "labels": 7,
+    "formula": "w_{\\mathbf kJ}=\\bigl\\|[\\,\\hat P^{\\mathbf k}\\tilde{\\mathbf v}_{\\mathbf KJ}\\,]_\\ell\\bigr\\|^2",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 398,
+    "labels": 7,
+    "formula": "A(\\mathbf k,\\omega)=\\sum_J w_{\\mathbf kJ}\\,\\delta(\\omega-\\omega_{\\mathbf KJ})",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 428,
+    "labels": 9,
+    "formula": "A_{\\eta}(\\mathbf k,\\omega)=\\sum_J w_{\\mathbf kJ}L_\\eta(\\omega-\\omega_{\\mathbf KJ}),\n\\qquad\nL_\\eta(x)=\\frac{\\eta}{\\pi(x^2+\\eta^2)}",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 408,
+    "labels": 8,
+    "formula": "\\hat P^{\\mathbf k\\mu}=\\frac{d_\\mu}{|\\bar G_{\\mathbf k}|}\n\\sum_j \\chi^{\\mathbf k\\mu}(\\hat g_j)^*\\,\\hat g_j",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 462,
+    "labels": 11,
+    "formula": "w_{\\mathbf kJ}^{\\mu}\n=\\bigl\\|[\\,\\hat P^{\\mathbf k\\mu}\\hat P^{\\mathbf k}\n\\tilde{\\mathbf v}_{\\mathbf KJ}\\,]_\\ell\\bigr\\|^2,\\qquad\nA^\\mu(\\mathbf k,\\omega)=\\sum_J w_{\\mathbf kJ}^{\\mu}\\delta(\\omega-\\omega_{\\mathbf KJ})",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 353,
+    "labels": 5,
+    "formula": "w_{\\mathbf k,XX'}=\n\\bigl(\\hat P^{\\mathbf k}\\hat P^X\\tilde{\\mathbf v}\\bigr)^\\dagger\n\\bigl(\\hat P^{\\mathbf k}\\hat P^{X'}\\tilde{\\mathbf v}\\bigr)",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 341,
+    "labels": 5,
+    "formula": "w_X=\\bigl\\|\\hat P^X\\tilde{\\mathbf v}\\bigr\\|^2,\\qquad\nw_{\\mathbf k,X}=w_{\\mathbf k}\\,w_X",
+    "overflow": false
+  },
+  {
+    "width": 1160,
+    "height": 354,
+    "labels": 4,
+    "formula": "\\overline A(\\mathbf k,\\omega)=\\frac{1}{|\\mathcal S(\\mathbf k)|}\n\\sum_{\\mathbf k'\\in\\mathcal S(\\mathbf k)} A(\\mathbf k',\\omega)",
+    "overflow": false
+  }
+]

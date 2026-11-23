@@ -11,5 +11,23 @@
 <div class="main" id="cards"></div>
 <div class="legend"><span><i class="swatch"></i> Unit-cell edge</span><span><i class="swatch neighbor"></i> Nearest-neighbor connection</span><span><i class="swatch dash"></i> Rear line</span><span><i class="swatch atom"></i> Atom position</span></div>
 <p class="note">Drag to rotate or scroll to zoom. Teal lines link nearest neighbors shown within each unit cell. In BCC, the body center connects to all eight corners. The HCP prism includes a center atom in each outer A layer and three atoms in the middle B layer.</p>
+<section class="lattice-guide" aria-labelledby="cells-title">
+<h2 id="cells-title" data-i18n="cells.title"></h2>
+<div class="guide-grid">
+<article><h3 data-i18n="cells.unitTitle"></h3><p data-i18n="cells.unit"></p><p data-i18n="cells.primitive"></p><p data-i18n="cells.conventional"></p></article>
+<article><h3 data-i18n="cells.superTitle"></h3><p data-i18n="cells.super"></p><div class="guide-equation">A₁ = N₁a₁, A₂ = N₂a₂, A₃ = N₃a₃<br>VSC = N₁N₂N₃ Vcell</div><p data-i18n="cells.matrix"></p></article>
+</div>
+<article><h3 data-i18n="cells.whyTitle"></h3><ul><li data-i18n="cells.disorder"></li><li data-i18n="cells.forces"></li><li data-i18n="cells.cost"></li></ul></article>
+<h2 data-i18n="reciprocal.title"></h2><p data-i18n="reciprocal.intro"></p>
+<div class="guide-grid">
+<article><h3 data-i18n="reciprocal.waveTitle"></h3><p data-i18n="reciprocal.wave"></p><div class="guide-equation">u(r,t) ∝ Re[exp(i(k·r − ωt))]<br>|k| = 2π/λ</div><p data-i18n="reciprocal.units"></p></article>
+<article><h3 data-i18n="reciprocal.periodTitle"></h3><p data-i18n="reciprocal.period"></p><div class="guide-equation">exp(iG·R) = 1 ⇔ G·R = 2πm<br>aᵢ·bⱼ = 2πδᵢⱼ<br>G = h b₁ + k b₂ + l b₃</div><p data-i18n="reciprocal.indices"></p></article>
+</div>
+<article><h3 data-i18n="reciprocal.buildTitle"></h3><div class="guide-equation">b₁ = 2π (a₂ × a₃) / [a₁ · (a₂ × a₃)]<br>b₂ = 2π (a₃ × a₁) / [a₁ · (a₂ × a₃)]<br>b₃ = 2π (a₁ × a₂) / [a₁ · (a₂ × a₃)]</div><p data-i18n="reciprocal.build"></p><p data-i18n="reciprocal.bz"></p></article>
+<article class="reciprocal-demo"><h3 data-i18n="reciprocal.demoTitle"></h3><p data-i18n="reciprocal.demoNote"></p><div class="guide-controls"><label><span data-i18n="reciprocal.spacing"></span> <input id="lattice-spacing" type="range" min="1" max="4" step="0.1" value="2"><output id="spacing-value"></output></label><label><span data-i18n="reciprocal.repeat"></span> <input id="lattice-repeat" type="range" min="1" max="6" step="1" value="3"><output id="repeat-value"></output></label></div><canvas id="reciprocal-demo" width="1000" height="360" role="img" aria-label="Real-space supercell and reciprocal-space Brillouin zones"></canvas><p id="reciprocal-values" aria-live="polite"></p><p data-i18n="reciprocal.inverse"></p></article>
+<article><h3 data-i18n="reciprocal.uphoTitle"></h3><p data-i18n="reciprocal.use"></p><p data-i18n="reciprocal.fold"></p><div class="guide-equation">k = K + GSC</div><p data-i18n="reciprocal.unfold"></p></article>
+<p class="guide-sources"><span data-i18n="cells.sources"></span> <a href="https://phonopy.github.io/phonopy/workflow.html" target="_blank" rel="noopener">Phonopy workflow</a> · <a href="https://bec.lpl.univ-paris13.fr/BEC/Teaching/lecture_notes.pdf" target="_blank" rel="noopener">Reciprocal lattice &amp; Fourier modes</a></p>
+</section>
+<script type="module" src="lattice-guide.js"></script>
 <script type="module" src="crystals.js"></script>
 </body></html>

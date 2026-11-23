@@ -31,7 +31,7 @@ for (const equation of equations) {
         const dot=document.createElementNS(NS,'circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','3');svg.append(dot);
       }
     };
-    const symbols=[...math.querySelectorAll('mi')].filter(el=>t('parameter.'+el.textContent)!=='parameter.'+el.textContent);
+    const symbols=[...math.querySelectorAll('mi')].filter(el=>!(el.textContent==='S' && el.getAttribute('mathvariant')==='normal') && t('parameter.'+el.textContent)!=='parameter.'+el.textContent);
     const parameterKey = el => 'parameter.'+(el.textContent==='G' && math.textContent.includes('μ')?'Ḡ':el.textContent);
     const update = () => {
       above.replaceChildren(); below.replaceChildren(); connections = [];
