@@ -1,6 +1,6 @@
 # 簡報手稿與輸出
 
-最新版 v006 共 34 頁：第 5 頁為聲子色散，第 6 頁為雙模式 GIF，第 7 頁為含 A／B 子晶格說明的位移對照，第 8 頁為 UPHO 流程圖；第 32 頁加入跨領域學習與 AI 使用反思。
+最新版 v007 共 38 頁：第 5–7 頁補上晶胞、波向量與布里淵區，第 8 頁介紹色散，第 9 頁組合動圖，第 10–11 頁分別講原子運動與位移曲線，第 12 頁為更新頁碼的 UPHO 流程圖；首頁加入互動網頁首頁 QR code。
 
 ## 先寫講稿，再整理簡報
 
@@ -76,7 +76,7 @@ HTML 更新後可執行 `node ppt/capture_reference.mjs`，需本機 Edge；可�
 
 ## 版本歸檔
 
-`archive_ppt.mjs` 預設選取下一個版本號，目前下一版為 `v007`。也可指定：
+`archive_ppt.mjs` 預設選取下一個版本號，目前下一版為 `v008`。也可指定：
 
 ```powershell
 node ppt/archive_ppt.mjs path/to/new.pptx v003
@@ -109,3 +109,11 @@ node ppt/archive_ppt.mjs ppt/.build/next.pptx
 重建動畫：設定 `ARTIFACT_NODE_MODULES` 與含 Pillow 的 `ARTIFACT_PYTHON` 後，執行 `node ppt/capture_mode_gifs.mjs`。腳本會呼叫 `encode_mode_gifs.py` 完成編碼。
 
 `assets/upho-formula-flow.html` 是流程圖的可修改來源，PNG 用於簡報。圖上公式頁碼對應 v005，若增刪投影片需同步更新。新增 `dispersion`、`pair_split` 與 `diagram` 版面；前兩者使用 `===` 分隔不同文字區域。
+
+## v007 組合動畫、拆解講解與 QR code
+
+先修改 `speech.md`，再整理為 `learning.md`。本版以同一段網站模型動畫建立組合、原子鏈、位移曲線三種視圖，各含聲學與光學兩張 GIF。使用 qa/π = 0.22、mB = 2mA，兩模態共用時間尺度。120 幀 × 80 ms = 9.6 秒，模型時間步長為 0.2；循環會回到片段起點，並非兩模態的共同週期。PDF 只呈現靜態首幀。
+
+設定既有 runtime 環境變數後，執行 `node ppt/capture_paired_modes.mjs`，會呼叫 `encode_paired_modes.py` 產生六個 `*-v007.gif`，另擷取布里淵區示意與 v007 流程圖。`pair_tall` 版面保留組合動畫高度。首頁使用 `assets/modes-qr.png`，內容為 `https://jerry-ya-ya.github.io/upho/#home`，已從渲染後首頁解碼驗證。
+
+`versions/v007/` 保存 PPTX、PDF、講稿、投影片 Markdown 與 manifest；產出簡報仍不加入 Git。GIF 已驗證在 PPTX 內保留 120 幀，尚未在本機 PowerPoint 放映驗證。

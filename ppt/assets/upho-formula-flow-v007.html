@@ -1,0 +1,19 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><style>
+*{box-sizing:border-box}body{margin:0;background:white;font-family:'Microsoft JhengHei',sans-serif;color:#203b37}.flow{width:1200px;height:550px;padding:10px}.row{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}.box{position:relative;border:1.5px solid #8eafa5;border-radius:9px;padding:12px;background:#f4f9f6;font-size:18px;line-height:1.5;min-height:123px}.box strong{display:block;font-size:21px;color:#14685c;margin-bottom:4px}.box small{display:block;font-size:16px;color:#566b65}.row .box:not(:last-child):after{content:'→';position:absolute;right:-25px;top:45px;font-size:25px;color:#438b78}.external{background:#f4f5f7;border-color:#b5bec5}.external strong{color:#465b6d}.down{text-align:right;height:33px;padding-right:127px;font-size:27px;color:#438b78}.channels{border:1.5px solid #8eafa5;border-radius:9px;padding:9px 14px;background:#fcfdfb}.channels header{font-size:19px;margin-bottom:8px}.branches{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.branches div{border-left:4px solid #8eafa5;padding:5px 10px;font-size:18px;line-height:1.4}.branches small{display:block;font-size:16px;color:#566b65}.next{text-align:left;padding-left:130px}.bottom .box{min-height:135px}.future{background:#fff8ee;border-style:dashed;border-color:#ba9e70}.future strong{color:#93641d}.foot{font-size:17px;margin:12px 0;color:#53675f}.row.bottom{gap:28px}
+</style><div class="flow">
+<div class="row">
+<div class="box external"><strong>上游輸入</strong>超晶胞結構、質量<br>力常數、目標 k 路徑<small>力常數計算在上游完成</small></div>
+<div class="box"><strong>A　計算振動模態</strong>D → ω、v 與 Bloch 相位<small>公式 p.13–15<br>eigenstates.py</small></div>
+<div class="box"><strong>B　對應波向量</strong>k = K + GSC<small>公式 p.16<br>選定理想原胞的投影位置</small></div>
+<div class="box"><strong>C　平移投影</strong>選出 k 成分 → 總權重 w<small>公式 p.17–18<br>translational_projector.py</small></div>
+</div><div class="down">↓</div>
+<div class="channels"><header><b>D　保留總權重，也可建立分解通道</b>　｜　SR、E1、E2 為不同分析選項，並非依序執行</header><div class="branches">
+<div>總展開權重<small>作為總譜的基準</small></div><div>SR：對稱性分量<small>公式 p.21–22</small></div><div>E1：元素對交叉項<small>公式 p.23</small></div><div>E2：個別元素權重<small>公式 p.24</small></div>
+</div></div><div class="down next">↓</div>
+<div class="row bottom">
+<div class="box"><strong>E　等價波向量平均</strong>選用 star 平均<small>公式 p.25<br>eigenstates.py 組合權重</small></div>
+<div class="box"><strong>F　建立頻譜</strong>權重、頻率 → A(k,ω)<small>公式 p.19–20<br>upho_sf：Lorentzian 展寬</small></div>
+<div class="box"><strong>繪圖與候選峰值</strong>線性／Gamma／局部峰值<small>upho_plot<br>為特徵分析準備資料</small></div>
+<div class="box future"><strong>後續研究（待驗證）</strong>物理約束學習、候選排序<small>目標：縮小搜尋範圍<br>檢驗總時間與漏選風險</small></div>
+</div><div class="foot">A–E：upho_weights 的模態與權重階段　　F：upho_sf 頻譜階段　　圖中頁碼對應本版公式頁。</div>
+</div></html>

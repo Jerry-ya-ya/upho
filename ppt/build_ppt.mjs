@@ -40,7 +40,7 @@ for (const [index, part] of parts.entries()) {
   const body = part.replace(/::: notes\n[\s\S]*?\n:::/g, '');
   const title = body.match(/^# (.+)$/m)?.[1];
   const layout = body.match(/<!-- layout: (\w+) -->/)?.[1];
-  if (!title || !['cover', 'image', 'table', 'pair', 'spectrum', 'formula', 'annotated', 'image_table', 'pair_split', 'dispersion', 'diagram', 'text'].includes(layout)) throw new Error(`Missing title/layout on slide ${index + 1}`);
+  if (!title || !['cover', 'image', 'table', 'pair', 'spectrum', 'formula', 'annotated', 'image_table', 'pair_split', 'pair_tall', 'dispersion', 'diagram', 'text'].includes(layout)) throw new Error(`Missing title/layout on slide ${index + 1}`);
   const images = [...body.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(m => ({ alt: m[1], src: m[2] }));
   const prose = body.replace(/\$\$\n[\s\S]*?\n\$\$/g, '').split('\n').filter(l => l.trim() && !/^(# |<!--|!\[|\|)/.test(l));
   const slide = presentation.slides.add(); slide.background.fill = '#ffffff';
@@ -50,11 +50,22 @@ for (const [index, part] of parts.entries()) {
   if (layout === 'cover') {
     text(slide, title, 65, 100, 1150, 95, 54, true);
     text(slide, prose.slice(0, 2).join('\n'), 70, 220, 1100, 100, 30);
-    text(slide, prose.slice(2).join('\n'), 70, 410, 1140, 160, 43, true);
+    text(slide, prose.slice(2).join('\n'), 70, 410, images.length ? 800 : 1140, 160, 43, true);
+    if(images.length){
+      await picture(slide, images[0], {left:930,top:350,width:245,height:245});
+      text(slide,'掃碼開啟互動網頁',920,600,300,35,23);
+      text(slide,'jerry-ya-ya.github.io/upho/#home',850,642,365,28,18);
+    }
     continue;
   }
   text(slide, title, 48, 27, 1184, 72, title.length > 48 ? 34 : 40, true);
-  if (layout === 'dispersion') {
+  if (layout === 'pair_tall') {
+    for(const [j,item] of images.entries()){
+      text(slide,item.alt,50+j*610,115,575,40,27,true);
+      await picture(slide,item,{left:40+j*620,top:160,width:580,height:435});
+    }
+    text(slide,prose.join('\n'),55,608,1150,65,23);
+  } else if (layout === 'dispersion') {
     await picture(slide, images[0], {left: 50, top: 115, width: 650, height: 280});
     const sections=prose.join('\n').split('===');
     text(slide, sections[0].trim(), 740, 125, 490, 300, 26);

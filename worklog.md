@@ -37,3 +37,5 @@
 ## 2026/11/23
 
 - Add a manuscript-driven presentation workflow with versioned PPT/PDF archives, annotated formulas, GIFs and a UPHO flowchart focused on material screening, and expand bilingual reference pages with reciprocal-space explanations, synchronized phonon views and corrected formula labels.
+
+- Arrange synchronized phonon displacement curves in six A/B columns above horizontal atom chains, adapt GIF capture, and add a bilingual wave-vector guide with a slider-linked Brillouin-zone diagram and high-symmetry point explanations.
